@@ -91,12 +91,17 @@ service cloud.firestore {
     }
 
     function hasRequiredDiaryKeys(data) {
-      let allKeys = [
+      let requiredKeys = [
         'userId', 'date', 'studyMinutes', 'studyTimeText', 'focusModule',
         'tags', 'mood', 'moodQuote', 'retrospective', 'cheerNote',
         'kwhEarned', 'targetCompany', 'createdAt', 'updatedAt'
       ];
-      return data.keys().hasAll(allKeys) && data.keys().hasOnly(allKeys);
+      let allowedKeys = [
+        'userId', 'date', 'studyMinutes', 'studyTimeText', 'focusModule',
+        'tags', 'mood', 'moodQuote', 'retrospective', 'cheerNote',
+        'kwhEarned', 'targetCompany', 'newsMemo', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(requiredKeys) && data.keys().hasOnly(allowedKeys);
     }
 
     function isValidDiaryEntry(data, userId, diaryId) {
@@ -131,6 +136,7 @@ service cloud.firestore {
         && data.cheerNote is string
         && data.cheerNote.size() >= 1
         && data.cheerNote.size() <= 500
+        && (!('newsMemo' in data) || (data.newsMemo is string && data.newsMemo.size() <= 1500))
         && data.kwhEarned is number
         && data.kwhEarned >= 0
         && data.kwhEarned <= 1
@@ -192,7 +198,7 @@ service cloud.firestore {
           && incoming().diff(existing()).affectedKeys().hasOnly([
             'studyMinutes', 'studyTimeText', 'focusModule', 'tags',
             'mood', 'moodQuote', 'retrospective', 'cheerNote',
-            'targetCompany', 'updatedAt'
+            'newsMemo', 'targetCompany', 'updatedAt'
           ]);
         allow delete: if isValidId(userId)
           && isValidDateId(diaryId)

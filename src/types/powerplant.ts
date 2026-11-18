@@ -77,6 +77,7 @@ export const VALIDATION_LIMITS = {
   moodQuoteMax: 200,
   retrospectiveMax: 3000,
   cheerNoteMax: 500,
+  newsMemoMax: 1500,
   completedQuizIdsMax: 100,
 } as const;
 
@@ -112,6 +113,7 @@ export interface DiaryEntry {
   moodQuote: string;
   retrospective: string;
   cheerNote: string;
+  newsMemo?: string;
   kwhEarned: number;
   targetCompany: string;
   createdAt?: unknown;

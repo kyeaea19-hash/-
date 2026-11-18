@@ -3,7 +3,6 @@ import { usePowerPlant } from '../context/PowerPlantContext';
 import { FALLBACK_INTERVIEW_TIPS } from '../data/newsData';
 import {
   getPlantTierName,
-  getTodayStr,
   isGracePeriodDate,
 } from '../lib/plantEngine';
 import { NewsArticle, POWER_COMPANIES, TabId } from '../types/powerplant';
@@ -25,6 +24,7 @@ export const HomeDashboard: React.FC<{ onNavigate: (tab: TabId) => void }> = ({
     todayStudyMinutes,
     updateTodayStudyMinutes,
     updatePreferences,
+    currentDate: todayStr,
   } = usePowerPlant();
   const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
   const [tipIndex, setTipIndex] = useState(0);
@@ -43,7 +43,6 @@ export const HomeDashboard: React.FC<{ onNavigate: (tab: TabId) => void }> = ({
 
   if (!profile) return null;
 
-  const todayStr = getTodayStr();
   const todayDiary = diariesByDate[todayStr];
   const inGrace = isGracePeriodDate(profile.signupDate, todayStr);
   const isBlackout = profile.storedKwh <= 0 && !inGrace;

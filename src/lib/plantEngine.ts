@@ -112,13 +112,24 @@ export function evaluateDailyBlackoutPenalties(
   let kwhLost = 0;
   let blackoutOccurred = false;
 
+  // If the plant was already in an unrecovered blackout state prior to this check window,
+  // consecutive missed days must not keep incrementing blackoutCount or deducting -10 levels.
+  let inBlackout =
+    storedKwh === 0 &&
+    blackoutCount > 0 &&
+    (!profile.lastWrittenDate || profile.lastWrittenDate <= profile.lastPenaltyCheckDate);
+
   const daysToCheck = diffDays(profile.lastPenaltyCheckDate, yesterdayStr);
   const cappedDays = Math.min(365, daysToCheck);
   for (let i = 1; i <= cappedDays; i++) {
     const checkDate = addDays(profile.lastPenaltyCheckDate, i);
     const hasDiary = Boolean(diariesByDate[checkDate]);
     const isGrace = isGracePeriodDate(profile.signupDate, checkDate);
-    if (!hasDiary && !isGrace) {
+    if (hasDiary) {
+      inBlackout = false;
+      continue;
+    }
+    if (!isGrace) {
       streak = 0;
       if (storedKwh > 0) {
         storedKwh -= 1;
@@ -127,11 +138,13 @@ export function evaluateDailyBlackoutPenalties(
           level = Math.max(0, level - 10);
           blackoutCount += 1;
           blackoutOccurred = true;
+          inBlackout = true;
         }
-      } else {
+      } else if (!inBlackout) {
         level = Math.max(0, level - 10);
         blackoutCount += 1;
         blackoutOccurred = true;
+        inBlackout = true;
       }
     }
   }
@@ -164,6 +177,7 @@ export function sanitizeDiaryInput(input: {
   moodQuote: string;
   retrospective: string;
   cheerNote: string;
+  newsMemo?: string;
   kwhEarned: number;
   targetCompany: string;
 }): Omit<DiaryEntry, 'createdAt' | 'updatedAt'> {
@@ -199,6 +213,7 @@ export function sanitizeDiaryInput(input: {
         0,
         VALIDATION_LIMITS.cheerNoteMax
       ),
+    newsMemo: (input.newsMemo || '').trim().slice(0, VALIDATION_LIMITS.newsMemoMax),
     kwhEarned: Math.max(0, Math.min(1, input.kwhEarned)),
     targetCompany:
       (input.targetCompany.trim() || '한국전력공사').slice(

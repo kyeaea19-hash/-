@@ -29,6 +29,7 @@ import {
   MoodLabel,
   NewsArticle,
   UserProfile,
+  VALIDATION_LIMITS,
 } from '../types/powerplant';
 
 type AuthMode = 'loading' | 'unauthenticated' | 'guest' | 'firebase';
@@ -54,6 +55,7 @@ interface SaveDiaryPayload {
   moodQuote: string;
   retrospective: string;
   cheerNote: string;
+  newsMemo?: string;
 }
 
 interface PowerPlantContextValue {
@@ -84,9 +86,13 @@ interface PowerPlantContextValue {
   fetchLiveNews: (opts?: { category?: string; query?: string; refresh?: boolean }) => Promise<void>;
   todayStudyMinutes: number;
   updateTodayStudyMinutes: (minutes: number) => Promise<void>;
+  todayNewsMemo: string;
+  saveTodayNewsMemo: (memoText: string) => Promise<void>;
+  currentDate: string;
 }
 
 const TODAY_STUDY_KEY = 'powerplant_today_study_v1';
+const TODAY_NEWS_MEMO_KEY = 'powerplant_today_news_memo_v1';
 
 const PowerPlantContext = createContext<PowerPlantContextValue | null>(null);
 
@@ -95,13 +101,15 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [diariesByDate, setDiariesByDate] = useState<Record<string, DiaryEntry>>({});
+  const [diariesReady, setDiariesReady] = useState(false);
+  const [currentDate, setCurrentDate] = useState<string>(() => getTodayStr());
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [blackoutBanner, setBlackoutBanner] = useState<{
     kwhLost: number;
     blackoutOccurred: boolean;
   } | null>(null);
-  const [penaltyCheckedUid, setPenaltyCheckedUid] = useState<string | null>(null);
+  const [penaltyCheckedKey, setPenaltyCheckedKey] = useState<string | null>(null);
 
   const [liveNews, setLiveNews] = useState<LiveNewsPayload | null>(null);
   const [newsLoading, setNewsLoading] = useState(false);
@@ -124,6 +132,25 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       // ignore invalid storage
     }
     return { date: today, minutes: 0 };
+  });
+
+  const [draftNewsMemoState, setDraftNewsMemoState] = useState<{ date: string; memo: string }>(() => {
+    const today = getTodayStr();
+    try {
+      const raw = localStorage.getItem(TODAY_NEWS_MEMO_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { date?: string; memo?: string };
+        if (parsed.date === today && typeof parsed.memo === 'string') {
+          return {
+            date: today,
+            memo: parsed.memo.slice(0, VALIDATION_LIMITS.newsMemoMax),
+          };
+        }
+      }
+    } catch {
+      // ignore invalid storage
+    }
+    return { date: today, memo: '' };
   });
 
   const fetchLiveNews = useCallback(
@@ -174,7 +201,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       if (!user) {
         setFirebaseUser(null);
-        setPenaltyCheckedUid(null);
+        setPenaltyCheckedKey(null);
         const savedGuest = localStorage.getItem(GUEST_STORAGE_KEY);
         if (savedGuest) {
           try {
@@ -184,6 +211,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             };
             setProfile(parsed.profile);
             setDiariesByDate(parsed.diaries || {});
+            setDiariesReady(true);
             setMode('guest');
             return;
           } catch {
@@ -192,11 +220,13 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
         setProfile(null);
         setDiariesByDate({});
+        setDiariesReady(false);
         setMode('unauthenticated');
         return;
       }
 
       setFirebaseUser(user);
+      setDiariesReady(false);
       setAuthError(null);
 
       const userPath = `users/${user.uid}`;
@@ -248,6 +278,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             map[entry.date || d.id] = entry;
           });
           setDiariesByDate(map);
+          setDiariesReady(true);
         },
         (err) => {
           handleFirestoreError(err, OperationType.LIST, diariesPath);
@@ -262,21 +293,62 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
   }, []);
 
-  // Automatically fetch today's live power news once authenticated or exploring
+  // Automatically detect midnight (00:00) rollover via timer, interval, and focus/visibility events
   useEffect(() => {
-    if ((mode === 'firebase' || mode === 'guest') && !liveNews && !newsLoading && !newsError) {
-      fetchLiveNews({ category: '전체' });
-    }
-  }, [mode, liveNews, newsLoading, newsError, fetchLiveNews]);
+    const syncDate = () => {
+      const latest = getTodayStr();
+      setCurrentDate((prev) => (prev === latest ? prev : latest));
+    };
 
-  // Evaluate daily blackout penalties once profile & diaries are loaded
+    const now = new Date();
+    const nextMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+      0,
+      0,
+      0,
+      250
+    );
+    const msUntilMidnight = Math.max(1000, nextMidnight.getTime() - now.getTime());
+    const midnightTimer = setTimeout(syncDate, msUntilMidnight);
+    const intervalId = setInterval(syncDate, 30000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') syncDate();
+    };
+    window.addEventListener('focus', syncDate);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearTimeout(midnightTimer);
+      clearInterval(intervalId);
+      window.removeEventListener('focus', syncDate);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [currentDate]);
+
+  // Automatically fetch today's live power news on entry or when the date rolls over past midnight
   useEffect(() => {
-    if (!profile || penaltyCheckedUid === profile.uid) return;
+    if (mode !== 'firebase' && mode !== 'guest') return;
+    if (newsLoading) return;
+    if (!liveNews && !newsError) {
+      fetchLiveNews({ category: '전체' });
+    } else if (liveNews && liveNews.date !== currentDate) {
+      fetchLiveNews({ category: '전체', refresh: true });
+    }
+  }, [mode, liveNews, newsLoading, newsError, currentDate, fetchLiveNews]);
+
+  // Evaluate daily blackout penalties once profile & diaries are loaded, and whenever currentDate rolls over
+  useEffect(() => {
+    if (!profile || !diariesReady) return;
     if (mode !== 'firebase' && mode !== 'guest') return;
 
-    const todayStr = getTodayStr();
-    const result = evaluateDailyBlackoutPenalties(profile, diariesByDate, todayStr);
-    setPenaltyCheckedUid(profile.uid);
+    const checkKey = `${profile.uid}::${currentDate}`;
+    if (penaltyCheckedKey === checkKey) return;
+
+    const result = evaluateDailyBlackoutPenalties(profile, diariesByDate, currentDate);
+    setPenaltyCheckedKey(checkKey);
 
     if (!result.changed) return;
 
@@ -287,8 +359,9 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       });
     }
 
+    setProfile(result.updatedProfile);
+
     if (mode === 'guest') {
-      setProfile(result.updatedProfile);
       localStorage.setItem(
         GUEST_STORAGE_KEY,
         JSON.stringify({ profile: result.updatedProfile, diaries: diariesByDate })
@@ -306,7 +379,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         handleFirestoreError(err, OperationType.UPDATE, userPath);
       });
     }
-  }, [profile, diariesByDate, mode, firebaseUser, penaltyCheckedUid]);
+  }, [profile, diariesReady, diariesByDate, mode, firebaseUser, penaltyCheckedKey, currentDate]);
 
   const signInWithGoogle = useCallback(async () => {
     setIsSigningIn(true);
@@ -336,6 +409,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         };
         setProfile(parsed.profile);
         setDiariesByDate(parsed.diaries || {});
+        setDiariesReady(true);
         setMode('guest');
         return;
       } catch {
@@ -346,20 +420,24 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(seed));
     setProfile(seed.profile);
     setDiariesByDate(seed.diaries);
-    setPenaltyCheckedUid(null);
+    setDiariesReady(true);
+    setPenaltyCheckedKey(null);
     setMode('guest');
   }, []);
 
   const logout = useCallback(async () => {
     localStorage.removeItem(GUEST_STORAGE_KEY);
     localStorage.removeItem(TODAY_STUDY_KEY);
+    localStorage.removeItem(TODAY_NEWS_MEMO_KEY);
     if (firebaseUser) {
       await signOut(auth);
     }
     setProfile(null);
     setDiariesByDate({});
+    setDiariesReady(false);
     setDraftStudyState({ date: getTodayStr(), minutes: 0 });
-    setPenaltyCheckedUid(null);
+    setDraftNewsMemoState({ date: getTodayStr(), memo: '' });
+    setPenaltyCheckedKey(null);
     setMode('unauthenticated');
   }, [firebaseUser]);
 
@@ -369,11 +447,20 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         throw new Error('프로필이 초기화되지 않았습니다.');
       }
 
-      const todayStr = getTodayStr();
+      const todayStr = currentDate;
       const targetDate = payload.date || todayStr;
       const existingEntry = diariesByDate[targetDate];
       const isNewEntry = !existingEntry;
       const isToday = targetDate === todayStr;
+
+      const resolvedNewsMemo =
+        payload.newsMemo !== undefined
+          ? payload.newsMemo
+          : existingEntry
+          ? existingEntry.newsMemo ?? ''
+          : isToday && draftNewsMemoState.date === todayStr
+          ? draftNewsMemoState.memo
+          : '';
 
       const cleanEntry = sanitizeDiaryInput({
         userId: profile.uid,
@@ -386,6 +473,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         moodQuote: payload.moodQuote,
         retrospective: payload.retrospective,
         cheerNote: payload.cheerNote,
+        newsMemo: resolvedNewsMemo,
         kwhEarned: existingEntry ? existingEntry.kwhEarned : isToday ? 1 : 0,
         targetCompany: profile.targetCompany,
       });
@@ -436,6 +524,10 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const syncedStudy = { date: todayStr, minutes: cleanEntry.studyMinutes };
         setDraftStudyState(syncedStudy);
         localStorage.setItem(TODAY_STUDY_KEY, JSON.stringify(syncedStudy));
+
+        const syncedMemo = { date: todayStr, memo: cleanEntry.newsMemo || '' };
+        setDraftNewsMemoState(syncedMemo);
+        localStorage.setItem(TODAY_NEWS_MEMO_KEY, JSON.stringify(syncedMemo));
       }
 
       if (mode === 'guest') {
@@ -494,6 +586,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             moodQuote: cleanEntry.moodQuote,
             retrospective: cleanEntry.retrospective,
             cheerNote: cleanEntry.cheerNote,
+            newsMemo: cleanEntry.newsMemo ?? '',
             targetCompany: cleanEntry.targetCompany,
             updatedAt: serverTimestamp(),
           });
@@ -521,7 +614,7 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
       return { isNewToday: isNewEntry && isToday, earnedKwh, newLevel: nextLevel, streakBonus };
     },
-    [profile, diariesByDate, mode, firebaseUser]
+    [profile, diariesByDate, mode, firebaseUser, currentDate, draftNewsMemoState]
   );
 
   const completeQuizBonus = useCallback(
@@ -614,17 +707,22 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     [profile, diariesByDate, mode, firebaseUser]
   );
 
-  const todayStrForStudy = getTodayStr();
-  const todayDiaryForStudy = diariesByDate[todayStrForStudy];
+  const todayDiaryForStudy = diariesByDate[currentDate];
   const todayStudyMinutes = todayDiaryForStudy
     ? todayDiaryForStudy.studyMinutes
-    : draftStudyState.date === todayStrForStudy
+    : draftStudyState.date === currentDate
     ? draftStudyState.minutes
     : 0;
 
+  const todayNewsMemo = todayDiaryForStudy
+    ? todayDiaryForStudy.newsMemo ?? ''
+    : draftNewsMemoState.date === currentDate
+    ? draftNewsMemoState.memo
+    : '';
+
   const updateTodayStudyMinutes = useCallback(
     async (minutes: number) => {
-      const today = getTodayStr();
+      const today = currentDate;
       const clamped = Math.max(0, Math.min(1440, Math.round(minutes)));
       const nextState = { date: today, minutes: clamped };
       setDraftStudyState(nextState);
@@ -642,10 +740,61 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           moodQuote: existing.moodQuote,
           retrospective: existing.retrospective,
           cheerNote: existing.cheerNote,
+          newsMemo: existing.newsMemo ?? '',
         });
       }
     },
-    [diariesByDate, profile, saveDiaryEntry]
+    [currentDate, diariesByDate, profile, saveDiaryEntry]
+  );
+
+  const saveTodayNewsMemo = useCallback(
+    async (memoText: string) => {
+      const today = currentDate;
+      const cleanMemo = memoText.trim().slice(0, VALIDATION_LIMITS.newsMemoMax);
+      const nextState = { date: today, memo: cleanMemo };
+      setDraftNewsMemoState(nextState);
+      localStorage.setItem(TODAY_NEWS_MEMO_KEY, JSON.stringify(nextState));
+
+      const existing = diariesByDate[today];
+      if (existing && profile) {
+        if (mode === 'guest') {
+          const updatedEntry: DiaryEntry = {
+            ...existing,
+            newsMemo: cleanMemo,
+            updatedAt: new Date().toISOString(),
+          };
+          const nextDiaries = { ...diariesByDate, [today]: updatedEntry };
+          setDiariesByDate(nextDiaries);
+          localStorage.setItem(
+            GUEST_STORAGE_KEY,
+            JSON.stringify({ profile, diaries: nextDiaries })
+          );
+          return;
+        }
+
+        if (firebaseUser) {
+          const diaryPath = `users/${firebaseUser.uid}/diaries/${today}`;
+          const diaryRef = doc(db, 'users', firebaseUser.uid, 'diaries', today);
+          try {
+            await updateDoc(diaryRef, {
+              newsMemo: cleanMemo,
+              updatedAt: serverTimestamp(),
+            });
+            setDiariesByDate((prev) => ({
+              ...prev,
+              [today]: {
+                ...existing,
+                newsMemo: cleanMemo,
+                updatedAt: new Date().toISOString(),
+              },
+            }));
+          } catch (err) {
+            handleFirestoreError(err, OperationType.UPDATE, diaryPath);
+          }
+        }
+      }
+    },
+    [currentDate, diariesByDate, profile, mode, firebaseUser]
   );
 
   return (
@@ -671,6 +820,9 @@ export const PowerPlantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         fetchLiveNews,
         todayStudyMinutes,
         updateTodayStudyMinutes,
+        todayNewsMemo,
+        saveTodayNewsMemo,
+        currentDate,
       }}
     >
       {children}

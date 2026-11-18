@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { usePowerPlant } from '../context/PowerPlantContext';
 import {
   formatLocalDate,
   getGridTierLabel,
-  getTodayStr,
   isGracePeriodDate,
   parseDateStr,
 } from '../lib/plantEngine';
@@ -17,8 +16,13 @@ export const RecordCalendarView: React.FC<{
   onEditDate: (dateStr: string) => void;
   onNavigate: (tab: TabId) => void;
 }> = ({ initialDate, onEditDate }) => {
-  const { profile, diariesByDate, updatePreferences } = usePowerPlant();
-  const todayStr = getTodayStr();
+  const {
+    profile,
+    diariesByDate,
+    updatePreferences,
+    todayNewsMemo,
+    currentDate: todayStr,
+  } = usePowerPlant();
   const focusDateStr = initialDate || todayStr;
   const focusDate = parseDateStr(focusDateStr);
 
@@ -26,6 +30,19 @@ export const RecordCalendarView: React.FC<{
   const [viewMonth, setViewMonth] = useState(focusDate.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState(focusDateStr);
   const [reminderSavedToast, setReminderSavedToast] = useState(false);
+  const prevTodayRef = useRef(todayStr);
+
+  useEffect(() => {
+    if (prevTodayRef.current !== todayStr) {
+      if (selectedDate === prevTodayRef.current) {
+        const parsedToday = parseDateStr(todayStr);
+        setViewYear(parsedToday.getFullYear());
+        setViewMonth(parsedToday.getMonth() + 1);
+        setSelectedDate(todayStr);
+      }
+      prevTodayRef.current = todayStr;
+    }
+  }, [todayStr, selectedDate]);
 
   useEffect(() => {
     if (initialDate) {
@@ -77,6 +94,12 @@ export const RecordCalendarView: React.FC<{
   const selectedParsed = parseDateStr(selectedDate);
   const selectedWeekday = WEEKDAYS_KO[selectedParsed.getDay()];
   const selectedMoodObj = MOOD_OPTIONS.find((m) => m.label === selectedEntry?.mood);
+  const selectedNewsMemo =
+    (selectedEntry
+      ? selectedEntry.newsMemo
+      : selectedDate === todayStr
+      ? todayNewsMemo
+      : '')?.trim() || '';
   const inGrace = isGracePeriodDate(profile.signupDate, todayStr);
 
   const recentEntries = Object.values(diariesByDate)
@@ -435,6 +458,23 @@ export const RecordCalendarView: React.FC<{
               </p>
             </div>
 
+            {selectedNewsMemo && (
+              <div className="p-space-md rounded-xl bg-surface-container-low text-on-surface mb-space-sm space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-tertiary font-label-lg text-label-lg">
+                    <span className="material-symbols-outlined text-[19px]">edit_note</span>
+                    오늘의 뉴스 · 면접 메모
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-surface-container-lowest text-secondary font-label-sm text-label-sm font-semibold">
+                    일기 연동 저장
+                  </span>
+                </div>
+                <p className="font-body-sm text-body-sm leading-relaxed text-on-surface whitespace-pre-line">
+                  {selectedNewsMemo}
+                </p>
+              </div>
+            )}
+
             <div className="p-space-sm rounded-xl bg-secondary-container/60 flex items-center gap-3">
               <div className="w-11 h-11 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0 shadow-sm p-1">
                 <PowerMascot pose="cheer" className="w-full h-full" />
@@ -448,19 +488,38 @@ export const RecordCalendarView: React.FC<{
             </div>
           </>
         ) : (
-          <div className="p-4 rounded-xl bg-surface-container-low text-center space-y-2.5">
-            <p className="font-body-md text-body-md text-secondary">
-              {selectedDate === todayStr
-                ? '아직 오늘의 발전 일기를 작성하지 않았어요. 지금 기록하고 +1 kWh를 충전해 보세요!'
-                : '해당 날짜에 작성된 발전 일기가 없습니다.'}
-            </p>
-            <button
-              type="button"
-              onClick={() => onEditDate(selectedDate)}
-              className="px-4 py-2 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md font-bold shadow-sm cursor-pointer"
-            >
-              {selectedDate === todayStr ? '오늘 일기 작성하기 ⚡' : '이 날짜 기록 추가하기'}
-            </button>
+          <div className="space-y-3">
+            <div className="p-4 rounded-xl bg-surface-container-low text-center space-y-2.5">
+              <p className="font-body-md text-body-md text-secondary">
+                {selectedDate === todayStr
+                  ? '아직 오늘의 발전 일기를 작성하지 않았어요. 지금 기록하고 +1 kWh를 충전해 보세요!'
+                  : '해당 날짜에 작성된 발전 일기가 없습니다.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => onEditDate(selectedDate)}
+                className="px-4 py-2 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md font-bold shadow-sm cursor-pointer"
+              >
+                {selectedDate === todayStr ? '오늘 일기 작성하기 ⚡' : '이 날짜 기록 추가하기'}
+              </button>
+            </div>
+
+            {selectedNewsMemo && (
+              <div className="p-space-md rounded-xl bg-surface-container-low text-on-surface space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-tertiary font-label-lg text-label-lg">
+                    <span className="material-symbols-outlined text-[19px]">edit_note</span>
+                    오늘의 뉴스 · 면접 메모
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold">
+                    오늘 일기에 함께 저장 예정
+                  </span>
+                </div>
+                <p className="font-body-sm text-body-sm leading-relaxed text-on-surface whitespace-pre-line">
+                  {selectedNewsMemo}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </article>
@@ -523,6 +582,16 @@ export const RecordCalendarView: React.FC<{
                   <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
                     {entry.retrospective}
                   </p>
+                  {entry.newsMemo && entry.newsMemo.trim() && (
+                    <div className="p-2.5 rounded-lg bg-surface-container-low space-y-1">
+                      <span className="font-label-sm text-label-sm text-tertiary font-bold block">
+                        뉴스 · 면접 메모
+                      </span>
+                      <p className="font-body-sm text-body-sm text-on-surface leading-relaxed whitespace-pre-line">
+                        {entry.newsMemo}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </details>
             );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { usePowerPlant } from '../context/PowerPlantContext';
-import { diffDays, getTodayStr } from '../lib/plantEngine';
+import { diffDays } from '../lib/plantEngine';
 import { POWER_COMPANIES, TabId } from '../types/powerplant';
 import { UserAvatarBadge } from './PowerPlantEmblem';
 
@@ -20,6 +20,7 @@ export const AppHeader: React.FC<{ activeTab: TabId }> = ({ activeTab }) => {
     signInWithGoogle,
     updatePreferences,
     logout,
+    currentDate: todayStr,
   } = usePowerPlant();
   const [showNoti, setShowNoti] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -30,7 +31,6 @@ export const AppHeader: React.FC<{ activeTab: TabId }> = ({ activeTab }) => {
   );
   const [savingPrefs, setSavingPrefs] = useState(false);
 
-  const todayStr = getTodayStr();
   const wroteToday = Boolean(diariesByDate[todayStr]);
   const storedKwh = profile?.storedKwh ?? 0;
   const inGrace = profile

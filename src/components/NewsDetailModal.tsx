@@ -1,12 +1,59 @@
-import React from 'react';
-import { NewsArticle } from '../types/powerplant';
+import React, { useEffect, useState } from 'react';
+import { usePowerPlant } from '../context/PowerPlantContext';
+import { NewsArticle, VALIDATION_LIMITS } from '../types/powerplant';
 import { NewsVisualBanner } from './PowerPlantEmblem';
 
 export const NewsDetailModal: React.FC<{
   article: NewsArticle | null;
   onClose: () => void;
 }> = ({ article, onClose }) => {
+  const { todayNewsMemo, saveTodayNewsMemo } = usePowerPlant();
+  const [memoText, setMemoText] = useState(todayNewsMemo);
+  const [saving, setSaving] = useState(false);
+  const [savedNotice, setSavedNotice] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!article) return;
+    setMemoText(todayNewsMemo);
+    setSavedNotice(false);
+    setSaveError(null);
+  }, [article?.id, todayNewsMemo]);
+
   if (!article) return null;
+
+  const isDirty = memoText.trim() !== todayNewsMemo.trim();
+  const shortArticleTitle =
+    article.title.length > 26 ? `${article.title.slice(0, 26)}…` : article.title;
+  const articleTag = `[${article.company}] ${shortArticleTitle}`;
+  const hasArticleTag = memoText.includes(articleTag);
+
+  const handleInsertArticleTag = () => {
+    setSavedNotice(false);
+    setSaveError(null);
+    setMemoText((prev) => {
+      const trimmed = prev.trimEnd();
+      const addition = `${articleTag}\n- `;
+      const next = trimmed ? `${trimmed}\n\n${addition}` : addition;
+      return next.slice(0, VALIDATION_LIMITS.newsMemoMax);
+    });
+  };
+
+  const handleSaveMemo = async () => {
+    if (saving) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await saveTodayNewsMemo(memoText);
+      setMemoText((prev) => prev.trim());
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 2400);
+    } catch {
+      setSaveError('메모를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div
@@ -80,6 +127,71 @@ export const NewsDetailModal: React.FC<{
             </div>
           </div>
         )}
+
+        {/* Compact Interview & News Memo Box */}
+        <div className="rounded-xl bg-surface-container-low p-3.5 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <label
+              htmlFor="news-interview-memo"
+              className="flex items-center gap-1.5 font-label-md text-label-md text-on-surface font-bold"
+            >
+              <span className="material-symbols-outlined text-[18px] text-primary">edit_note</span>
+              나만의 면접 · 기사 메모
+            </label>
+            {!hasArticleTag && (
+              <button
+                type="button"
+                onClick={handleInsertArticleTag}
+                className="px-2 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold hover:bg-primary-fixed transition-colors cursor-pointer shrink-0"
+              >
+                + 기사 제목 넣기
+              </button>
+            )}
+          </div>
+
+          <textarea
+            id="news-interview-memo"
+            rows={3}
+            maxLength={VALIDATION_LIMITS.newsMemoMax}
+            value={memoText}
+            onChange={(e) => {
+              setMemoText(e.target.value);
+              if (savedNotice) setSavedNotice(false);
+              if (saveError) setSaveError(null);
+            }}
+            placeholder="면접 예상 질문, 자소서 연결 포인트, 기억할 핵심 키워드를 가볍게 메모해 보세요."
+            className="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg p-2.5 focus:outline-none placeholder:text-secondary/60 leading-relaxed shadow-inner resize-y"
+          />
+
+          {saveError && (
+            <p className="font-label-sm text-label-sm text-error">{saveError}</p>
+          )}
+
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="font-label-sm text-label-sm text-secondary">
+              {savedNotice
+                ? '저장 완료 · 오늘 일기와 기록달력에 반영되었어요'
+                : '오늘 일기에 함께 저장 · 기록달력 회고 아래에 표시돼요'}
+            </span>
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
+              <span className="font-label-sm text-label-sm text-secondary">
+                {memoText.length}/{VALIDATION_LIMITS.newsMemoMax}
+              </span>
+              <button
+                type="button"
+                onClick={handleSaveMemo}
+                disabled={saving || (!isDirty && !savedNotice && memoText.trim().length === 0)}
+                className={`px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-bold transition-all cursor-pointer disabled:opacity-60 ${
+                  savedNotice && !isDirty
+                    ? 'bg-tertiary-container text-on-tertiary'
+                    : 'bg-primary-container text-on-primary shadow-xs hover:opacity-95'
+                }`}
+              >
+                {saving ? '저장 중...' : savedNotice && !isDirty ? '저장됨 ✓' : '메모 저장'}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div className="flex items-center justify-between pt-2 gap-3 flex-wrap">
           <span className="font-label-sm text-label-sm text-secondary">{article.sourceName}</span>

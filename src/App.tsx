@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { BottomNav } from './components/BottomNav';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -8,17 +8,26 @@ import { OnboardingScreen } from './components/OnboardingScreen';
 import { RecordCalendarView } from './components/RecordCalendarView';
 import { WriteDiaryView } from './components/WriteDiaryView';
 import { PowerPlantProvider, usePowerPlant } from './context/PowerPlantContext';
-import { getTodayStr } from './lib/plantEngine';
 import { TabId } from './types/powerplant';
 
 const AppShell: React.FC = () => {
-  const { mode } = usePowerPlant();
+  const { mode, currentDate } = usePowerPlant();
   const [activeTab, setActiveTab] = useState<TabId>('home');
-  const [diaryTargetDate, setDiaryTargetDate] = useState<string>(getTodayStr());
+  const [diaryTargetDate, setDiaryTargetDate] = useState<string>(currentDate);
+  const prevDateRef = useRef<string>(currentDate);
+
+  useEffect(() => {
+    if (prevDateRef.current !== currentDate) {
+      if (diaryTargetDate === prevDateRef.current) {
+        setDiaryTargetDate(currentDate);
+      }
+      prevDateRef.current = currentDate;
+    }
+  }, [currentDate, diaryTargetDate]);
 
   const handleSelectTab = (tab: TabId) => {
     if (tab === 'write') {
-      setDiaryTargetDate(getTodayStr());
+      setDiaryTargetDate(currentDate);
     }
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -3,9 +3,8 @@ import { usePowerPlant } from '../context/PowerPlantContext';
 import {
   formatStudyTime,
   generateWarmCheerMessage,
-  getTodayStr,
 } from '../lib/plantEngine';
-import { MOOD_OPTIONS, MoodLabel, TabId } from '../types/powerplant';
+import { MOOD_OPTIONS, MoodLabel, TabId, VALIDATION_LIMITS } from '../types/powerplant';
 import { PowerMascot } from './PowerPlantEmblem';
 
 const QUICK_TAGS = [
@@ -28,9 +27,10 @@ export const WriteDiaryView: React.FC<{
     saveDiaryEntry,
     todayStudyMinutes,
     updateTodayStudyMinutes,
+    todayNewsMemo,
+    currentDate: todayStr,
   } = usePowerPlant();
 
-  const todayStr = getTodayStr();
   const activeDate = targetDate || todayStr;
   const isToday = activeDate === todayStr;
   const existingEntry = diariesByDate[activeDate];
@@ -50,6 +50,9 @@ export const WriteDiaryView: React.FC<{
   const [selectedMood, setSelectedMood] = useState<MoodLabel>(initialMood);
   const [retrospective, setRetrospective] = useState(
     existingEntry?.retrospective || ''
+  );
+  const [newsMemo, setNewsMemo] = useState(
+    existingEntry?.newsMemo ?? (isToday ? todayNewsMemo : '')
   );
   const [cheerSeed, setCheerSeed] = useState(() => new Date().getDate());
   const [isCheerAuto, setIsCheerAuto] = useState(!existingEntry?.cheerNote);
@@ -82,6 +85,7 @@ export const WriteDiaryView: React.FC<{
       setFocusModule(existingEntry.focusModule);
       setSelectedMood(existingEntry.mood);
       setRetrospective(existingEntry.retrospective);
+      setNewsMemo(existingEntry.newsMemo ?? '');
       setCheerNote(
         existingEntry.cheerNote ||
           generateWarmCheerMessage(existingEntry.mood, cheerSeed)
@@ -106,6 +110,7 @@ export const WriteDiaryView: React.FC<{
           setFocusModule(d.focusModule || '');
           setSelectedMood(draftMood);
           setRetrospective(d.retrospective || '');
+          setNewsMemo(isToday ? todayNewsMemo : d.newsMemo || '');
           setCheerNote(
             d.cheerNote || generateWarmCheerMessage(draftMood, cheerSeed)
           );
@@ -122,13 +127,14 @@ export const WriteDiaryView: React.FC<{
       setFocusModule('');
       setSelectedMood('아이디어 번뜩');
       setRetrospective('');
+      setNewsMemo(isToday ? todayNewsMemo : '');
       setCheerNote(generateWarmCheerMessage('아이디어 번뜩', cheerSeed));
       setIsCheerAuto(true);
       setTags([]);
     }
-  }, [activeDate, existingEntry, isToday, todayStudyMinutes, cheerSeed]);
+  }, [activeDate, existingEntry, isToday, todayStudyMinutes, todayNewsMemo, cheerSeed]);
 
-  // Keep study time synced if changed externally (e.g. from Home modal)
+  // Keep study time & news memo synced if changed externally (e.g. from Home or NewsDetailModal)
   useEffect(() => {
     if (!isToday) return;
     const targetMins = existingEntry ? existingEntry.studyMinutes : todayStudyMinutes;
@@ -136,12 +142,17 @@ export const WriteDiaryView: React.FC<{
     setStudyMins(targetMins % 60);
   }, [isToday, todayStudyMinutes, existingEntry]);
 
+  useEffect(() => {
+    if (!isToday) return;
+    setNewsMemo(existingEntry ? (existingEntry.newsMemo ?? '') : todayNewsMemo);
+  }, [isToday, todayNewsMemo, existingEntry]);
+
   // Keep quiet local backup while typing a new entry
   useEffect(() => {
     if (existingEntry) return;
     const totalMinutes = studyHours * 60 + studyMins;
     const timer = setTimeout(() => {
-      if (totalMinutes > 0 || focusModule.trim() || retrospective.trim()) {
+      if (totalMinutes > 0 || focusModule.trim() || retrospective.trim() || newsMemo.trim()) {
         localStorage.setItem(
           `${DRAFT_KEY}_${activeDate}`,
           JSON.stringify({
@@ -149,6 +160,7 @@ export const WriteDiaryView: React.FC<{
             focusModule,
             mood: selectedMood,
             retrospective,
+            newsMemo,
             cheerNote: isCheerAuto ? '' : cheerNote,
             tags,
           })
@@ -164,6 +176,7 @@ export const WriteDiaryView: React.FC<{
     focusModule,
     selectedMood,
     retrospective,
+    newsMemo,
     cheerNote,
     isCheerAuto,
     tags,
@@ -242,6 +255,7 @@ export const WriteDiaryView: React.FC<{
           retrospective.trim() ||
           '오늘도 목표 공기업 합격을 향해 꾸준히 학습을 이어갔다.',
         cheerNote: finalCheer,
+        newsMemo,
       });
 
       localStorage.removeItem(`${DRAFT_KEY}_${activeDate}`);
@@ -543,21 +557,48 @@ export const WriteDiaryView: React.FC<{
             </span>
           </div>
 
-          <div className="bg-surface-container-low rounded-lg p-space-md">
-            <label
-              htmlFor="retrospective-input"
-              className="block font-label-md text-label-md text-primary font-bold mb-1"
-            >
-              오늘 공부 &amp; 전력 뉴스 인사이트 정리
-            </label>
-            <textarea
-              id="retrospective-input"
-              rows={4}
-              value={retrospective}
-              onChange={(e) => setRetrospective(e.target.value)}
-              placeholder="오늘 하루 어떤 공부를 진행했나요? 오늘 읽은 전력 뉴스나 오답 정리 내용을 자유롭게 적어보세요."
-              className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg p-space-sm focus:outline-none placeholder:text-secondary/60 leading-relaxed shadow-inner"
-            />
+          <div className="bg-surface-container-low rounded-lg p-space-md space-y-3">
+            <div>
+              <label
+                htmlFor="retrospective-input"
+                className="block font-label-md text-label-md text-primary font-bold mb-1"
+              >
+                오늘 공부 &amp; 전력 뉴스 인사이트 정리
+              </label>
+              <textarea
+                id="retrospective-input"
+                rows={4}
+                value={retrospective}
+                onChange={(e) => setRetrospective(e.target.value)}
+                placeholder="오늘 하루 어떤 공부를 진행했나요? 오늘 읽은 전력 뉴스나 오답 정리 내용을 자유롭게 적어보세요."
+                className="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg p-space-sm focus:outline-none placeholder:text-secondary/60 leading-relaxed shadow-inner"
+              />
+            </div>
+
+            {(newsMemo.trim().length > 0 || Boolean(existingEntry?.newsMemo?.trim())) && (
+              <div className="pt-1 border-t border-surface-container-high/70">
+                <label
+                  htmlFor="diary-news-memo-input"
+                  className="flex items-center justify-between font-label-sm text-label-sm text-tertiary font-bold mb-1"
+                >
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px]">edit_note</span>
+                    뉴스에서 작성한 면접 · 기사 메모 (함께 저장)
+                  </span>
+                  <span className="text-secondary font-normal">
+                    {newsMemo.length}/{VALIDATION_LIMITS.newsMemoMax}
+                  </span>
+                </label>
+                <textarea
+                  id="diary-news-memo-input"
+                  rows={2}
+                  maxLength={VALIDATION_LIMITS.newsMemoMax}
+                  value={newsMemo}
+                  onChange={(e) => setNewsMemo(e.target.value)}
+                  className="w-full bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded-lg p-2.5 focus:outline-none leading-relaxed shadow-inner"
+                />
+              </div>
+            )}
           </div>
         </div>
 

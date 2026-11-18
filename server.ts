@@ -34,6 +34,7 @@ interface RssItem {
   publishedLabel: string;
   snippet: string;
   timestamp: number;
+  articleText?: string;
 }
 
 function getKstDateParts(): { isoDate: string; displayDate: string } {
@@ -63,6 +64,8 @@ function decodeHtmlEntities(str: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_m, dec) => String.fromCharCode(Number(dec)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_m, hex) => String.fromCharCode(parseInt(hex, 16)))
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -358,13 +361,126 @@ function inferArticleMeta(item: RssItem): {
   };
 }
 
+function splitFactualSentences(rawText: string): string[] {
+  if (!rawText) return [];
+  const cleaned = rawText
+    .replace(/\[[^\]]*(?:제공|캡처|사진|자료|연합뉴스|뉴시스|뉴스1)[^\]]*\]/g, ' ')
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, ' ')
+    .replace(/\([^)]*=\s*[^)]+\)\s*[가-힣]{2,4}\s*기자\s*=/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const matches = cleaned.match(/[^.!?]+(?:[.!?]+|$)/g) || [];
+  const out: string[] = [];
+  for (const m of matches) {
+    const s = m.trim();
+    if (s.length >= 18 && s.length <= 240 && /[가-힣]/.test(s)) {
+      out.push(s);
+    }
+    if (out.length >= 5) break;
+  }
+  return out;
+}
+
+async function fetchSingleArticleBody(item: RssItem): Promise<RssItem> {
+  const fetchWithTimeout = async (url: string, ms: number) => {
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), ms);
+    try {
+      const res = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+        },
+      });
+      if (!res.ok) return '';
+      return await res.text();
+    } catch {
+      return '';
+    } finally {
+      clearTimeout(t);
+    }
+  };
+
+  try {
+    const naverSearchUrl = `https://search.naver.com/search.naver?where=news&sort=1&query=${encodeURIComponent(
+      item.title
+    )}`;
+    const searchHtml = await fetchWithTimeout(naverSearchUrl, 2500);
+    const naverLinks = [
+      ...searchHtml.matchAll(/https:\/\/n\.news\.naver\.com\/mnews\/article\/[^"&'<> \n]+/g),
+    ].map((m) => m[0]);
+
+    for (const naverUrl of [...new Set(naverLinks)].slice(0, 2)) {
+      const artHtml = await fetchWithTimeout(naverUrl, 2500);
+      if (!artHtml) continue;
+      const dic =
+        artHtml.match(/<article[^>]*id="dic_area"[^>]*>([\s\S]*?)<\/article>/i)?.[1] ||
+        artHtml.match(/id="newsct_article"[^>]*>([\s\S]*?)<\/div>/i)?.[1] ||
+        '';
+      if (dic) {
+        const body = decodeHtmlEntities(
+          dic
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<em[^>]*class="img_desc"[^>]*>[\s\S]*?<\/em>/gi, ' ')
+            .replace(/<span[^>]*class="end_photo_org"[^>]*>[\s\S]*?<\/span>/gi, ' ')
+        );
+        if (body.length >= 80) {
+          return {
+            ...item,
+            articleText: body.slice(0, 1400),
+            link: naverUrl,
+          };
+        }
+      }
+    }
+
+    const bingUrl = `https://www.bing.com/news/search?q=${encodeURIComponent(
+      item.title
+    )}&format=rss&mkt=ko-KR`;
+    const bingXml = await fetchWithTimeout(bingUrl, 2500);
+    if (bingXml) {
+      const bingBlocks = [...bingXml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+      for (const bm of bingBlocks.slice(0, 3)) {
+        const block = bm[1];
+        const bDesc = decodeHtmlEntities(block.match(/<description>([\s\S]*?)<\/description>/)?.[1] || '');
+        const bLink = block.match(/<link>([\s\S]*?)<\/link>/)?.[1] || '';
+        const realUrlMatch = bLink.match(/url=([^&]+)/);
+        const directUrl = realUrlMatch ? decodeURIComponent(realUrlMatch[1]) : item.link;
+        if (bDesc.length >= 40) {
+          return {
+            ...item,
+            articleText: bDesc.slice(0, 800),
+            link: directUrl || item.link,
+          };
+        }
+      }
+    }
+  } catch {
+    // ignore fetch error and keep RSS item
+  }
+  return item;
+}
+
+async function hydrateArticlesWithRealBody(items: RssItem[]): Promise<RssItem[]> {
+  const results = await Promise.allSettled(items.map((it) => fetchSingleArticleBody(it)));
+  return results.map((r, idx) => (r.status === 'fulfilled' ? r.value : items[idx]));
+}
+
 function buildFallbackBriefings(items: RssItem[], isoDate: string) {
   const articles = items.slice(0, 8).map((item, idx) => {
     const meta = inferArticleMeta(item);
-    const cleanSnippet =
-      item.snippet && item.snippet.length > 15
-        ? item.snippet
-        : `${item.sourceName}에서 보도한 "${item.title}" 관련 최신 소식입니다.`;
+    const sentences = splitFactualSentences(item.articleText || item.snippet || '');
+    const intro =
+      sentences[0] || `${item.sourceName}(${item.publishedLabel})에서 보도한 기사입니다.`;
+    const bullets =
+      sentences.length >= 2
+        ? sentences.slice(0, 3)
+        : sentences.length === 1
+        ? [item.title, sentences[0]]
+        : [item.title, '상세 내용은 아래 원문 보기에서 직접 확인할 수 있습니다.'];
+
     return {
       id: `rss-${isoDate}-${idx}`,
       company: meta.company,
@@ -374,12 +490,8 @@ function buildFallbackBriefings(items: RssItem[], isoDate: string) {
       subtitle: `${item.sourceName} 보도 · ${item.publishedLabel}`,
       publishedLabel: item.publishedLabel,
       readTimeLabel: '1분 브리핑',
-      intro: cleanSnippet,
-      bullets: [
-        `핵심 이슈: ${item.title}`,
-        `보도 출처: ${item.sourceName} (${item.publishedLabel})에서 다룬 최신 전력·에너지 동향입니다.`,
-        `취준 포인트: ${meta.ncsNote}`,
-      ],
+      intro,
+      bullets,
       interviewTip: meta.interviewTip,
       ncsNote: meta.ncsNote,
       sourceName: item.sourceName,
@@ -394,7 +506,7 @@ function buildFallbackBriefings(items: RssItem[], isoDate: string) {
   const quiz = lead
     ? {
         id: `quiz-${isoDate}`,
-        question: `Q. 오늘 주요 뉴스 "${lead.title}"와 가장 밀접한 전력 공기업 취업 핵심 키워드는 무엇일까요?`,
+        question: `Q. 오늘 주요 뉴스 "${lead.title}"와 가장 직접적으로 관련된 분야는 무엇일까요?`,
         options: [
           `① ${lead.category}`,
           '② 단순 소비재 유통',
@@ -402,7 +514,7 @@ function buildFallbackBriefings(items: RssItem[], isoDate: string) {
           '④ 반도체 패키징 공정',
         ],
         correctIndex: 0,
-        explanation: `해당 이슈는 "${lead.company} / ${lead.category}" 분야의 핵심 현안으로, ${lead.interviewTip}`,
+        explanation: `"${lead.title}" 기사는 ${lead.company}(${lead.category}) 분야의 보도 내용입니다.`,
         bonusKwh: 1,
       }
     : null;
@@ -436,14 +548,18 @@ async function enrichWithGeminiIfAvailable(items: RssItem[], isoDate: string) {
 
   const headlinesInput = items
     .slice(0, 8)
-    .map(
-      (it, idx) =>
-        `[${idx}] 제목: ${it.title} | 언론사: ${it.sourceName} | 시점: ${it.publishedLabel} | 요약문: ${it.snippet}`
-    )
-    .join('\n');
+    .map((it, idx) => {
+      const bodyText = it.articleText || it.snippet || '(본문 미확보 - 제목 사실만 사용)';
+      return `[${idx}] 제목: ${it.title} | 언론사: ${it.sourceName} | 시점: ${it.publishedLabel}\n기사 본문 발췌: ${bodyText}`;
+    })
+    .join('\n\n');
 
-  const prompt = `다음은 오늘(${isoDate}) 실제 보도된 한국 전력·에너지 및 전기직 주요 공기업(한국전력, 한수원, 발전5사, 가스공사, 도로공사, 코레일 등) 뉴스 기사 목록입니다.
-각 기사의 사실을 왜곡하지 말고, 전력·전기직 공기업 취준생이 30초 만에 읽고 면접·NCS에 활용할 수 있도록 정리해 주세요.
+  const prompt = `다음은 오늘(${isoDate}) 실제 보도된 한국 전력·에너지 및 전기직 주요 공기업 뉴스 목록과 실제 기사 본문 발췌입니다.
+
+[가장 중요한 절대 원칙 — 사실 충실성]
+1. subtitle, intro, bullets에는 **반드시 아래 제공된 기사 제목과 기사 본문 발췌에 명시적으로 적힌 사실·수치·기관·인물·발언만** 요약하세요.
+2. **기사에 없는 수치, 날짜, 원인, 향후 전망, 다른 기업 사례, 과장·추측 내용을 절대 지어내어 추가하지 마세요.**
+3. 본문 발췌가 짧거나 부족할 경우, 억지로 3줄을 채우려고 없는 내용을 덧붙이지 말고 확인된 사실만으로 1~2줄만 간결하게 작성하세요.
 
 기사 목록:
 ${headlinesInput}
@@ -455,27 +571,27 @@ ${headlinesInput}
       "index": 0,
       "company": "핵심 기관 또는 분야 태그 (2~8글자, 예: 한국전력, 한국가스공사, 한국도로공사, 코레일, 원전·SMR, 전력시장)",
       "category": "세부 카테고리 (2~8글자)",
-      "subtitle": "부제 한 줄",
-      "intro": "친근한 1~2문장 도입 설명",
-      "bullets": ["핵심 요약 1", "핵심 요약 2", "핵심 요약 3"],
-      "interviewTip": "면접·자소서 연결 팁 1~2문장",
+      "subtitle": "기사 내용에 근거한 한 줄 부제",
+      "intro": "기사에 적힌 사실만 담은 1~2문장 도입 설명",
+      "bullets": ["기사 본문에 근거한 핵심 사실 1", "기사 본문에 근거한 핵심 사실 2"],
+      "interviewTip": "기사 주제 키워드와 연결한 취준 학습 포인트 1문장 (기사 외 사실을 기사 사실인 것처럼 쓰지 말 것)",
       "ncsNote": "면접·NCS 키워드 한 줄"
     }
   ],
   "quiz": {
     "id": "quiz-${isoDate}",
-    "question": "Q. 위 오늘 기사들 중 핵심 상식을 확인하는 4지선다 퀴즈 1문제",
+    "question": "Q. 위 제공된 오늘 기사 내용만으로 풀 수 있는 4지선다 퀴즈 1문제",
     "options": ["① 보기1", "② 보기2", "③ 보기3", "④ 보기4"],
     "correctIndex": 0,
-    "explanation": "정답 해설 1~2문장",
+    "explanation": "기사에 명시된 내용만 근거로 한 정답 해설 1~2문장",
     "bonusKwh": 1
   },
   "interviewTips": [
     {
       "id": "tip-1",
       "company": "분야명",
-      "question": "Q. 오늘 기사 기반 면접 예상 질문",
-      "answer": "모범 답변 2문장"
+      "question": "Q. 위 기사 주제 기반 면접 대비 질문",
+      "answer": "면접 답변 방향 2문장"
     }
   ]
 }`;
@@ -508,7 +624,7 @@ ${headlinesInput}
         intro: String(e.intro || orig.intro),
         bullets:
           Array.isArray(e.bullets) && e.bullets.length > 0
-            ? e.bullets.map((b: unknown) => String(b)).slice(0, 3)
+            ? e.bullets.map((b: unknown) => String(b)).filter(Boolean).slice(0, 3)
             : orig.bullets,
         interviewTip: String(e.interviewTip || orig.interviewTip),
         ncsNote: String(e.ncsNote || orig.ncsNote),
@@ -529,7 +645,7 @@ ${headlinesInput}
 }
 
 const NOISE_TITLE_REGEX =
-  /(야구|프로야구|KBO|축구|K리그|EPL|NBA|감독|선수|구단|우승|결승|올림픽|월드컵|전력투구|전력 투구|전력질주|전력 질주|전력 보강|팀 전력|군 전력|국방|전투기|미사일|무기|병력|교역액 역대|정상회담|드라마|영화|배우|가수|아이돌|콘서트|예능|웹툰|유튜브|맛집|아파트 분양|청약|특징주|상한가|목표주가|매수의견|매수 의견|추돌사고|다중추돌|차량 정체|귀성길 정체|열차 지연 안내|승차권 예매|기차표 예매|관광열차)/;
+  /(야구|프로야구|KBO|배구|프로배구|V리그|OK저축은행|우리카드|대한항공|KB손해보험|현대캐피탈|삼성화재|세트스코어|연승|연패|축구|K리그|EPL|NBA|감독|선수|구단|우승|결승|올림픽|월드컵|전력투구|전력 투구|전력질주|전력 질주|전력 보강|팀 전력|군 전력|국방|전투기|미사일|무기|병력|교역액 역대|정상회담|드라마|영화|배우|가수|아이돌|콘서트|예능|웹툰|유튜브|맛집|아파트 분양|청약|특징주|상한가|목표주가|매수의견|매수 의견|추돌사고|다중추돌|차량 정체|귀성길 정체|열차 지연 안내|승차권 예매|기차표 예매|관광열차)/;
 
 const ELECTRICAL_CORPS_REGEX =
   /(한국가스공사|가스공사|한국도로공사|도로공사|코레일|한국철도공사|국가철도공단|한국수자원공사|수자원공사|K-water|지역난방공사|한국전기안전공사|전기안전공사|한국에너지공단|에너지공단|인천국제공항공사|한국공항공사|서울교통공사)/;
@@ -665,8 +781,9 @@ async function fetchTodayPowerNews(category: string, userQuery: string) {
     throw new Error('현재 검색 조건에 해당하는 전력·에너지·전기직 공기업 뉴스를 찾지 못했습니다.');
   }
 
-  const enriched = await enrichWithGeminiIfAvailable(deduped, isoDate);
-  const finalContent = enriched || buildFallbackBriefings(deduped, isoDate);
+  const hydrated = await hydrateArticlesWithRealBody(deduped);
+  const enriched = await enrichWithGeminiIfAvailable(hydrated, isoDate);
+  const finalContent = enriched || buildFallbackBriefings(hydrated, isoDate);
 
   return {
     date: isoDate,
@@ -674,7 +791,7 @@ async function fetchTodayPowerNews(category: string, userQuery: string) {
     articles: finalContent.articles,
     quiz: finalContent.quiz,
     interviewTips: finalContent.interviewTips,
-    groundingSources: deduped.map((it) => ({
+    groundingSources: hydrated.map((it) => ({
       title: `${it.sourceName} · ${it.title.slice(0, 28)}...`,
       uri: it.link,
     })),

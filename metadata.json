@@ -1,0 +1,6 @@
+{
+  "name": "발전소 키우기",
+  "description": "전력 공기업 취준생을 위한 매일의 성장 루틴 - 3줄 전력 뉴스 브리핑, 내면 돌봄 일기, 발전소 성장 캘린더",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

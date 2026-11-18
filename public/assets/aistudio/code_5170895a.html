@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&amp;family=Noto+Sans+KR:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#f8f9ff;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-tertiary-fixed": "#2d1600", "error": "#ba1a1a", "on-secondary-container": "#5c647a", "background": "#f8f9ff", "on-background": "#0b1c30", "on-error": "#ffffff", "primary-container": "#ff5e1e", "outline": "#8f7066", "secondary-container": "#dae2fd", "primary": "#ab3500", "inverse-surface": "#213145", "inverse-primary": "#ffb59d", "tertiary-container": "#d87d00", "surface": "#f8f9ff", "on-secondary-fixed": "#131b2e", "secondary-fixed-dim": "#bec6e0", "surface-container": "#e5eeff", "surface-container-high": "#dce9ff", "on-surface-variant": "#5b4138", "surface-container-low": "#eff4ff", "on-primary-fixed": "#390c00", "primary-fixed": "#ffdbd0", "secondary": "#565e74", "on-secondary": "#ffffff", "outline-variant": "#e3beb3", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#3f465c", "surface-bright": "#f8f9ff", "on-surface": "#0b1c30", "on-tertiary-fixed-variant": "#6a3b00", "tertiary-fixed-dim": "#ffb874", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#832700", "error-container": "#ffdad6", "surface-container-highest": "#d3e4fe", "on-primary-container": "#561600", "surface-dim": "#cbdbf5", "on-tertiary": "#ffffff", "inverse-on-surface": "#eaf1ff", "surface-tint": "#ab3500", "secondary-fixed": "#dae2fd", "tertiary": "#8c5000", "surface-variant": "#d3e4fe", "on-tertiary-container": "#452400", "tertiary-fixed": "#ffdcbf", "on-error-container": "#93000a", "primary-fixed-dim": "#ffb59d" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-desktop": "2.5rem", "space-md": "1rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-desktop": "1.5rem", "margin": "1rem", "gutter": "1rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Noto Sans"], "display-lg": ["Plus Jakarta Sans"], "body-md": ["Noto Sans"], "label-lg": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-sm": ["Noto Sans"] }, fontSize: { "label-sm": ["11px", { lineHeight: "14px", fontWeight: "700" }], "headline-md": ["20px", { lineHeight: "30px", fontWeight: "700" }], "label-md": ["12px", { lineHeight: "16px", fontWeight: "600" }], "headline-sm": ["17px", { lineHeight: "26px", fontWeight: "700" }], "headline-lg": ["24px", { lineHeight: "34px", fontWeight: "700" }], "body-lg": ["16px", { lineHeight: "27px", fontWeight: "400" }], "display-lg": ["36px", { lineHeight: "46px", fontWeight: "800" }], "body-md": ["14px", { lineHeight: "24px", fontWeight: "400" }], "label-lg": ["14px", { lineHeight: "20px", fontWeight: "700" }], "display-lg-mobile": ["26px", { lineHeight: "36px", fontWeight: "800" }], "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(11,28,48,0.04)] pt-safe"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary shrink-0 shadow-[0_4px_12px_rgba(255,94,30,0.25)]"><span class="material-symbols-outlined text-[20px]">bolt</span></div><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface truncate">발전소 키우기</span><span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm shrink-0 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse"></span>정상 가동 중</span></div><span class="font-label-md text-label-md text-primary font-bold truncate">Home Dashboard</span></div></div><div class="flex items-center gap-space-xs shrink-0"><button aria-label="에너지 알림" class="w-11 h-11 flex items-center justify-center rounded-full text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-container/20" src="https://lh3.googleusercontent.com/aida/ALJJyrBd5SHprFAMB8eVcXlQamQThkYj80L2pez-3S47lcSSuF7ubgdbafu-PeUKSgfEzWoTcKqk8tuwiSHcmb69xjISSx_kBHVR1SaDmEVfgaQOgLfImO9hI_Q8doyHNqQJ-PV7Y_KN2r3O7tOT5RWDsLcEgFCNQkoVNlGhyDQw8eN_cMhH5fuBE9P4CkHmEO1_bwag8Ug_YpE-8qsrcRFSJANEAnE0kTFFhENiUp5zxpA"/></div></div></header><main class="flex-1 flex flex-col relative w-full px-margin pt-16 pb-24 bg-surface max-w-[680px] mx-auto"><div class="flex flex-col w-full pb-8 space-y-6">
+<!-- 1. 발전소 상태 & 레벨 카드 (NEWNEEK/UPPITY 위트 있는 감성) -->
+<section class="bg-surface-container-lowest rounded-xl p-5 shadow-sm space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm mb-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container animate-ping"></span>
+<span>⚡ 정상 가동 중 (안전율 100%)</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Lv.24 스마트 원자력 &amp; 신재생 발전소</h2>
+<p class="font-body-sm text-body-sm text-secondary mt-0.5">매일 작성하는 취준 일기가 청정 터빈을 돌립니다</p>
+</div>
+<!-- 인터랙티브 상태 아이콘 -->
+<div class="w-12 h-12 rounded-xl bg-secondary-container/40 flex items-center justify-center text-primary-container shrink-0">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">solar_power</span>
+</div>
+</div>
+<!-- 발전소 비주얼 그래픽 배너 -->
+<div class="relative w-full rounded-xl overflow-hidden bg-gradient-to-r from-surface-container-high to-surface-container-low p-4 flex items-center justify-between">
+<div class="space-y-1 z-10">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">GRID STATUS</span>
+<div class="font-headline-sm text-headline-sm text-on-surface">정전 위험까지 앞으로 <span class="text-primary-container font-extrabold">18일</span> 안전!</div>
+<p class="font-body-sm text-body-sm text-secondary">가입 3일 유예 혜택 적용 완료 • 매일 밤 24:00 갱신</p>
+</div>
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest/80 flex items-center justify-center shadow-sm shrink-0">
+<span class="material-symbols-outlined text-primary-container text-[32px]">offline_bolt</span>
+</div>
+</div>
+<!-- 전력 게이지 & 룰 툴팁 모듈 -->
+<div class="space-y-2 pt-1">
+<div class="flex justify-between items-end font-label-md text-label-md">
+<span class="text-on-surface font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container">battery_charging_full</span>
+          누적 저장 전력량
+        </span>
+<span class="text-secondary"><strong class="text-primary-container text-headline-sm font-headline-sm">18</strong> / 365 kWh</span>
+</div>
+<!-- 프로그레스 바 -->
+<div class="w-full h-3.5 bg-surface-container rounded-full overflow-hidden p-0.5">
+<div class="h-full bg-gradient-to-r from-primary-container to-tertiary-container rounded-full transition-all duration-700 ease-out" style="width: 5%;"></div>
+</div>
+<!-- 정전 규칙 안내 바 (뉴닉 스타일의 투명한 경고 뱃지) -->
+<div class="flex items-center gap-1.5 p-2 rounded-lg bg-surface-container-low text-secondary font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">info</span>
+<span>하루 미작성 시 <strong class="text-error">-1 kWh</strong> 차감 • 0 kWh 도달 시 발전소 단계 <strong class="text-error">-10 하락</strong></span>
+</div>
+</div>
+</section>
+<!-- 2. 오늘의 핵심 액션 카드 (일기 쓰기 유도 및 CTA) -->
+<section class="bg-surface-container-lowest rounded-xl p-5 shadow-sm relative overflow-hidden space-y-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs">!</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">오늘의 전력 공급 액션</h3>
+</div>
+<div class="p-3.5 rounded-lg bg-primary-fixed/30 space-y-1">
+<p class="font-label-lg text-label-lg text-on-surface">오늘의 발전 일기를 쓰고 1단계를 즉시 업그레이드하세요!</p>
+<div class="flex items-center gap-2 text-primary font-label-md text-label-md font-bold">
+<span>+1 kWh 전력 충전</span>
+<span>•</span>
+<span>+1 레벨 UP</span>
+<span>•</span>
+<span>하루 1회 한정</span>
+</div>
+</div>
+<a class="w-full h-12 bg-primary-container text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-[0_8px_20px_rgba(255,94,30,0.24)] active:scale-[0.98] transition-all" href="#">
+<span class="material-symbols-outlined text-[20px]">edit_square</span>
+<span>오늘의 발전 일기 쓰기</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</section>
+<!-- 3. 오늘 나의 취준 현황 미니 트래커 -->
+<section class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between">
+<div class="flex items-center gap-1.5 text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-primary-container">timer</span>
+<span>오늘 집중 시간</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg text-on-surface">4</span>
+<span class="font-label-md text-label-md text-secondary">시간</span>
+<span class="font-headline-lg text-headline-lg text-on-surface ml-1">30</span>
+<span class="font-label-md text-label-md text-secondary">분</span>
+</div>
+<div class="mt-2 text-primary font-label-sm text-label-sm">목표 6시간까지 1시간 30분 남음</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between">
+<div class="flex items-center gap-1.5 text-secondary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container">local_fire_department</span>
+<span>연속 기록 스트릭</span>
+</div>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="font-headline-lg text-headline-lg text-primary-container font-extrabold">12</span>
+<span class="font-label-md text-label-md text-secondary">일째 연속 달성 중</span>
+</div>
+<div class="mt-2 text-secondary font-label-sm text-label-sm">연속 14일 달성 시 보너스 +5kWh</div>
+</div>
+</section>
+<!-- 4. 뉴닉/어피티 스타일 3줄 전력 뉴스 브리핑 헤더 트랙 -->
+<section class="space-y-4">
+<!-- 레퍼런스 스타일 스트라이프 & 중앙 캡슐 배너 -->
+<div class="relative flex items-center justify-center my-3">
+<!-- 배경 줄무늬 패턴 -->
+<div class="w-full h-3 rounded-full opacity-35 bg-[repeating-linear-gradient(45deg,#ff5e1e,#ff5e1e_4px,transparent_4px,transparent_8px)]"></div>
+<!-- 오렌지 캡슐 헤더 -->
+<div class="absolute px-5 py-1.5 rounded-full bg-primary-container text-on-primary font-headline-sm text-headline-sm font-black shadow-md flex items-center gap-1.5 tracking-tight">
+<span>⚡ 전력 공기업 3줄 뉴스</span>
+</div>
+</div>
+<!-- 섹션 서브 바 -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-1.5 font-headline-sm text-headline-sm text-on-surface">
+<span>오늘의 전력 헤드라인</span>
+<span class="text-primary-container">📢</span>
+</div>
+<a class="font-label-md text-label-md text-secondary hover:text-primary flex items-center" href="#">
+<span>전체보기</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+<!-- 뉴스 브리핑 카드 1 (한국전력공사) -->
+<article class="bg-surface-container-lowest rounded-xl p-5 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<!-- 레퍼런스 특유의 묵직한 검정 카테고리 태그 -->
+<span class="px-2 py-0.5 bg-on-surface text-surface-container-lowest rounded font-label-sm text-label-sm font-bold tracking-tight">
+          한국전력공사
+        </span>
+<span class="font-label-sm text-label-sm text-secondary">오늘 오전 09:30</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-headline-sm text-headline-sm text-on-surface leading-snug">
+          HVDC 동해안-수도권 송전선로 1공구 준공 완료
+        </h4>
+<p class="font-body-sm text-body-sm text-secondary">
+          동해안 발전 제약 해소와 수도권 첨단 반도체 클러스터 전력망 공급 가시화
+        </p>
+</div>
+<!-- 3줄 요약 불릿 박스 -->
+<div class="p-3.5 rounded-lg bg-surface-container-low space-y-2">
+<div class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-2 shrink-0"></span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            강원도 삼척에서 수도권을 잇는 <strong class="underline decoration-primary-container/40 underline-offset-2">500kV 초고압 직류 송전선로(HVDC)</strong> 1단계 구간 공사가 공식 마무리됐어요.
+          </p>
+</div>
+<div class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-2 shrink-0"></span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            수도권 전력망 부하를 낮추고 동해안 원전 및 대규모 재생에너지 단지의 전력 수송 병목현상을 대폭 해소할 예정이에요.
+          </p>
+</div>
+<div class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container mt-2 shrink-0"></span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            한전은 잔여 2공구 구축을 2026년 상반기까지 신속히 완공하여 전력망 안정성을 극대화하겠다고 밝혔어요.
+          </p>
+</div>
+</div>
+<!-- 하단 출처 & 액션 링크 -->
+<div class="pt-1 flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-secondary">출처: 한국전력공사 홍보실 보도자료</span>
+<a class="text-primary font-bold hover:underline flex items-center gap-0.5" href="#">
+<span>자세히 보기</span>
+<span class="material-symbols-outlined text-[16px]">arrow_right_alt</span>
+</a>
+</div>
+</article>
+<!-- 뉴스 브리핑 카드 2 (한국수력원자력) -->
+<article class="bg-surface-container-lowest rounded-xl p-5 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 bg-on-surface text-surface-container-lowest rounded font-label-sm text-label-sm font-bold tracking-tight">
+          한국수력원자력
+        </span>
+<span class="font-label-sm text-label-sm text-secondary">오늘 오전 08:15</span>
+</div>
+<div class="space-y-1">
+<h4 class="font-headline-sm text-headline-sm text-on-surface leading-snug">
+          체코 두코바니 신규 원전 24조 원 본계약 초읽기 🇨🇿
+        </h4>
+<p class="font-body-sm text-body-sm text-secondary">
+          팀코리아, 최종 계약 세부 협상 돌입... 2025년 3월 공식 체결 목표
+        </p>
+</div>
+<!-- 3줄 요약 불릿 박스 -->
+<div class="p-3.5 rounded-lg bg-surface-container-low space-y-2">
+<div class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container mt-2 shrink-0"></span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            체코 정부가 발주한 24조 원 규모 두코바니 5·6호기 신규 원전 건설 사업의 우선협상대상자인 한수원이 본계약 문안 확정 단계에 돌입했어요.
+          </p>
+</div>
+<div class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container mt-2 shrink-0"></span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            경쟁국 프랑스(EDF)의 이의제기가 체코 경쟁당국에서 기각됨에 따라 계약 체결을 가로막던 최대 법적 불확실성이 완전 해소됐어요.
+          </p>
+</div>
+<div class="flex items-start gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container mt-2 shrink-0"></span>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+            한전KPS, 두산에너빌리티, 대우건설 등 팀코리아 주력 기업들의 해외 수주 잭팟 및 신규 채용 확대가 기대돼요.
+          </p>
+</div>
+</div>
+<!-- 하단 출처 & 액션 링크 -->
+<div class="pt-1 flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-secondary">출처: 산업통상자원부 원전수출진흥과</span>
+<a class="text-primary font-bold hover:underline flex items-center gap-0.5" href="#">
+<span>자세히 보기</span>
+<span class="material-symbols-outlined text-[16px]">arrow_right_alt</span>
+</a>
+</div>
+</article>
+</section>
+<!-- 면접/필기 대비 한 줄 암기 팁 (뉴닉 스타일 오렌지 박스) -->
+<aside class="p-4 rounded-xl bg-primary-fixed/40 space-y-1.5">
+<div class="flex items-center gap-1.5 font-label-md text-label-md text-primary font-bold">
+<span class="material-symbols-outlined text-[18px]">lightbulb</span>
+<span>전력공기업 면접 1분 한 줄 상식</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+<strong>Q. 초고압 직류 송전(HVDC)의 핵심 장점은?</strong><br/>
+      교류(AC) 방식보다 송전 손실이 적고 장거리 대용량 전력 전송이 가능하며, 주파수가 다른 전력망 간의 계통 연계가 매우 유연합니다.
+    </p>
+</aside>
+</div>
+<script>
+  // 경쾌한 마이크로인터랙션: 안전율 카드 터치 시 스파크 펄스 효과
+  document.addEventListener('DOMContentLoaded', () => {
+    const pulseCard = document.querySelector('section');
+    if (pulseCard) {
+      pulseCard.addEventListener('click', () => {
+        pulseCard.classList.add('scale-[0.99]');
+        setTimeout(() => pulseCard.classList.remove('scale-[0.99]'), 150);
+      });
+    }
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(11,28,48,0.05)]" data-active-classes="text-primary-container font-bold"><div class="flex justify-around items-center h-16 max-w-[680px] mx-auto px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 transition-all text-primary-container font-bold" data-path="home-dashboard" href="#"><span class="material-symbols-outlined text-[22px]">energy_savings_leaf</span><span class="font-label-sm text-label-sm mt-0.5">홈</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-secondary hover:text-on-surface transition-all" data-path="news-briefs" href="#"><span class="material-symbols-outlined text-[22px]">newspaper</span><span class="font-label-sm text-label-sm mt-0.5">뉴스</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-secondary hover:text-on-surface transition-all" data-path="write-diary" href="#"><div class="w-10 h-10 -mt-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-[0_6px_16px_rgba(255,94,30,0.35)]"><span class="material-symbols-outlined text-[22px]">edit_note</span></div><span class="font-label-sm text-label-sm mt-0.5">일기쓰기</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-secondary hover:text-on-surface transition-all" data-path="record-calendar" href="#"><span class="material-symbols-outlined text-[22px]">calendar_month</span><span class="font-label-sm text-label-sm mt-0.5">기록달력</span></a></div></nav></body></html>

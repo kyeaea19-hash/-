@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&amp;family=Noto+Sans+KR:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#f8f9ff;}body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-tertiary-fixed": "#2d1600", "error": "#ba1a1a", "on-secondary-container": "#5c647a", "background": "#f8f9ff", "on-background": "#0b1c30", "on-error": "#ffffff", "primary-container": "#ff5e1e", "outline": "#8f7066", "secondary-container": "#dae2fd", "primary": "#ab3500", "inverse-surface": "#213145", "inverse-primary": "#ffb59d", "tertiary-container": "#d87d00", "surface": "#f8f9ff", "on-secondary-fixed": "#131b2e", "secondary-fixed-dim": "#bec6e0", "surface-container": "#e5eeff", "surface-container-high": "#dce9ff", "on-surface-variant": "#5b4138", "surface-container-low": "#eff4ff", "on-primary-fixed": "#390c00", "primary-fixed": "#ffdbd0", "secondary": "#565e74", "on-secondary": "#ffffff", "outline-variant": "#e3beb3", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#3f465c", "surface-bright": "#f8f9ff", "on-surface": "#0b1c30", "on-tertiary-fixed-variant": "#6a3b00", "tertiary-fixed-dim": "#ffb874", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#832700", "error-container": "#ffdad6", "surface-container-highest": "#d3e4fe", "on-primary-container": "#561600", "surface-dim": "#cbdbf5", "on-tertiary": "#ffffff", "inverse-on-surface": "#eaf1ff", "surface-tint": "#ab3500", "secondary-fixed": "#dae2fd", "tertiary": "#8c5000", "surface-variant": "#d3e4fe", "on-tertiary-container": "#452400", "tertiary-fixed": "#ffdcbf", "on-error-container": "#93000a", "primary-fixed-dim": "#ffb59d" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "margin-desktop": "2.5rem", "space-md": "1rem", "space-sm": "0.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "gutter-desktop": "1.5rem", "margin": "1rem", "gutter": "1rem" }, fontFamily: { "label-sm": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Noto Sans"], "display-lg": ["Plus Jakarta Sans"], "body-md": ["Noto Sans"], "label-lg": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"], "body-sm": ["Noto Sans"] }, fontSize: { "label-sm": ["11px", { lineHeight: "14px", fontWeight: "700" }], "headline-md": ["20px", { lineHeight: "30px", fontWeight: "700" }], "label-md": ["12px", { lineHeight: "16px", fontWeight: "600" }], "headline-sm": ["17px", { lineHeight: "26px", fontWeight: "700" }], "headline-lg": ["24px", { lineHeight: "34px", fontWeight: "700" }], "body-lg": ["16px", { lineHeight: "27px", fontWeight: "400" }], "display-lg": ["36px", { lineHeight: "46px", fontWeight: "800" }], "body-md": ["14px", { lineHeight: "24px", fontWeight: "400" }], "label-lg": ["14px", { lineHeight: "20px", fontWeight: "700" }], "display-lg-mobile": ["26px", { lineHeight: "36px", fontWeight: "800" }], "body-sm": ["13px", { lineHeight: "20px", fontWeight: "400" }] } } } }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(11,28,48,0.04)] pt-safe"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary shrink-0 shadow-[0_4px_12px_rgba(255,94,30,0.25)]"><span class="material-symbols-outlined text-[20px]">bolt</span></div><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm text-on-surface truncate">발전소 키우기</span><span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm shrink-0 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse"></span>정상 가동 중</span></div><span class="font-label-md text-label-md text-primary font-bold truncate">Write Diary</span></div></div><div class="flex items-center gap-space-xs shrink-0"><button aria-label="에너지 알림" class="w-11 h-11 flex items-center justify-center rounded-full text-secondary hover:text-on-surface hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span></button><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-container/20" src="https://lh3.googleusercontent.com/aida/ALJJyrBd5SHprFAMB8eVcXlQamQThkYj80L2pez-3S47lcSSuF7ubgdbafu-PeUKSgfEzWoTcKqk8tuwiSHcmb69xjISSx_kBHVR1SaDmEVfgaQOgLfImO9hI_Q8doyHNqQJ-PV7Y_KN2r3O7tOT5RWDsLcEgFCNQkoVNlGhyDQw8eN_cMhH5fuBE9P4CkHmEO1_bwag8Ug_YpE-8qsrcRFSJANEAnE0kTFFhENiUp5zxpA"/></div></div></header><main class="flex-1 flex flex-col relative w-full px-margin pt-16 pb-24 bg-surface max-w-[680px] mx-auto"><div class="flex flex-col w-full pb-10">
+<!-- Top Motivation & Plant Energy Bar -->
+<section class="bg-surface-container-low rounded-xl p-space-md mb-space-lg shadow-sm">
+<div class="flex items-center justify-between gap-space-xs mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm tracking-wide">
+          19일 연속 가동 중
+        </span>
+<span class="font-label-md text-label-md text-tertiary font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">bolt</span>
+          Lv.24 → Lv.25 승급 임박
+        </span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">자정 마감</span>
+</div>
+<!-- Editorial Header Pill inspired by Korean Newsletters -->
+<div class="flex items-center gap-2 mb-2">
+<div class="h-2 w-2 rounded-full bg-primary-container animate-ping"></div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">
+        오늘의 첫 일기를 완료하면 <span class="text-primary font-bold">+1 kWh</span> 충전!
+      </h2>
+</div>
+<p class="font-body-sm text-body-sm text-secondary leading-relaxed mb-space-sm">
+      오늘 일기를 남기면 발전소가 다음 티어로 진화합니다. 만약 미작성 시 차가운 냉각수로 인해 자정에 전력량이 <span class="text-error font-bold">-1 kWh</span> 감소할 수 있어요!
+    </p>
+<!-- Visual Power Gauge Bar -->
+<div class="w-full bg-surface-container-highest rounded-full h-3 overflow-hidden p-0.5">
+<div class="bg-primary-container h-full rounded-full transition-all duration-700 ease-out" id="power-progress-bar" style="width: 82%;"></div>
+</div>
+<div class="flex justify-between items-center mt-1.5 font-label-sm text-label-sm text-secondary">
+<span>현재 발전량: 41.2 kWh</span>
+<span class="text-primary font-bold">목표: 42.2 kWh (+1.0)</span>
+</div>
+</section>
+<!-- Editorial Style News Banner Anchor: UPPITY / NEWNEEK Style Stamp -->
+<div class="flex items-center justify-center my-space-xs mb-space-lg">
+<div class="w-full flex items-center gap-3">
+<div class="flex-1 h-[2px] bg-secondary-container"></div>
+<div class="px-4 py-1.5 rounded-full bg-primary-container text-on-primary font-label-lg text-label-lg tracking-wider shadow-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+        취준 발전일지 작성
+      </div>
+<div class="flex-1 h-[2px] bg-secondary-container"></div>
+</div>
+</div>
+<!-- Diary Form Section -->
+<form class="flex flex-col gap-space-lg" id="diary-form" onsubmit="event.preventDefault(); handleDiarySubmit();">
+<!-- Section 1: Study Time Tracker -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="bg-on-surface text-surface-container-lowest font-label-sm text-label-sm px-2 py-0.5 rounded">공부 시간</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">오늘의 송전 시간 기록</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary bg-tertiary-fixed px-2 py-0.5 rounded-full font-bold">집중 전력</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm mb-space-sm">
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col justify-center">
+<label class="font-label-sm text-label-sm text-secondary mb-1">총 학습 시간</label>
+<div class="flex items-baseline gap-1">
+<input class="w-full bg-transparent font-headline-md text-headline-md text-on-surface font-bold focus:outline-none" id="study-hours" placeholder="예: 5시간 20분" type="text" value="6시간 30분"/>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col justify-center">
+<label class="font-label-sm text-label-sm text-secondary mb-1">집중 모듈</label>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[18px]">speed</span>
+<input class="w-full bg-transparent font-label-md text-label-md text-on-surface font-semibold focus:outline-none truncate" id="study-focus" placeholder="예: 전공필기 100제" type="text" value="NCS 모의고사 &amp; 전공"/>
+</div>
+</div>
+</div>
+<!-- Quick Tag Chips -->
+<div class="flex flex-wrap gap-1.5 pt-1">
+<button class="px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm hover:bg-primary-container hover:text-on-primary transition-colors" onclick="appendTag('한전 필기')" type="button">
+          + 한전 필기
+        </button>
+<button class="px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm hover:bg-primary-container hover:text-on-primary transition-colors" onclick="appendTag('NCS 봉투모고 2회')" type="button">
+          + NCS 봉투모고 2회
+        </button>
+<button class="px-2.5 py-1 rounded-full bg-surface-container text-secondary font-label-sm text-label-sm hover:bg-primary-container hover:text-on-primary transition-colors" onclick="appendTag('전기자기학 오답')" type="button">
+          + 전기자기학 오답
+        </button>
+</div>
+</div>
+<!-- Section 2: Mood & Battery Selector -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<span class="bg-on-surface text-surface-container-lowest font-label-sm text-label-sm px-2 py-0.5 rounded">내면 돌봄</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">오늘의 배터리 상태</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold" id="selected-mood-desc">아이디어 번뜩!</span>
+</div>
+<p class="font-body-sm text-body-sm text-secondary mb-space-md">취업 준비는 마라톤이에요. 마음의 잔여 배터리를 점검해주세요.</p>
+<!-- 5 Interactive Battery Options -->
+<div class="grid grid-cols-5 gap-1.5">
+<button class="mood-btn flex flex-col items-center justify-center p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all" onclick="selectMood('활력 충전', '⚡ 100% 풀충전! 문제 풀이 쾌속 질주', this)" type="button">
+<span class="text-2xl mb-1">⚡</span>
+<span class="font-label-sm text-label-sm text-on-surface text-center">활력 충전</span>
+</button>
+<button class="mood-btn active-mood flex flex-col items-center justify-center p-2 rounded-xl bg-primary-fixed text-on-primary-fixed shadow-sm transition-all" onclick="selectMood('아이디어 번뜩', '💡 오답 분석 중 킬러 공식 완전 정복!', this)" type="button">
+<span class="text-2xl mb-1">💡</span>
+<span class="font-label-sm text-label-sm text-on-surface text-center font-bold">번뜩임</span>
+</button>
+<button class="mood-btn flex flex-col items-center justify-center p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all" onclick="selectMood('평온함', '🔋 기복 없이 루틴대로 담담하게 진행', this)" type="button">
+<span class="text-2xl mb-1">🔋</span>
+<span class="font-label-sm text-label-sm text-on-surface text-center">평온함</span>
+</button>
+<button class="mood-btn flex flex-col items-center justify-center p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all" onclick="selectMood('방전 직전', '🪫 집중력이 흐려진 하루, 따뜻한 차 한 잔 필요', this)" type="button">
+<span class="text-2xl mb-1">🪫</span>
+<span class="font-label-sm text-label-sm text-on-surface text-center">방전 직전</span>
+</button>
+<button class="mood-btn flex flex-col items-center justify-center p-2 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all" onclick="selectMood('휴식 필요', '🔌 오늘은 발전기 냉각 모드. 푹 쉬고 리셋!', this)" type="button">
+<span class="text-2xl mb-1">🔌</span>
+<span class="font-label-sm text-label-sm text-on-surface text-center">휴식 요망</span>
+</button>
+</div>
+<!-- Mood Editorial Advice Callout -->
+<div class="mt-space-sm p-space-sm bg-surface-container-low rounded-lg flex items-center gap-2" id="mood-banner">
+<span class="material-symbols-outlined text-primary text-[20px]">psychology</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium" id="mood-quote">
+          💡 오답 분석 중 킬러 공식 완전 정복!
+        </span>
+</div>
+</div>
+<!-- Section 3: Today's Retrospective (Editorial Article Style) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-2">
+<span class="bg-on-surface text-surface-container-lowest font-label-sm text-label-sm px-2 py-0.5 rounded">발전 일지</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">오늘 하루 가동 회고</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">history_edu</span> 심층 복기
+        </span>
+</div>
+<!-- Editorial Card Left Stripe Accent -->
+<div class="bg-surface-container-low rounded-lg p-space-md">
+<label class="block font-label-md text-label-md text-primary font-bold mb-1" for="retrospective-input">
+          오늘 채용 공고 &amp; 스터디 성과 분석
+        </label>
+<textarea class="w-full bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg p-space-sm focus:outline-none placeholder:text-secondary/60 leading-relaxed shadow-inner" id="retrospective-input" placeholder="오늘 하루 어떤 공부를 진행했나요? 작은 진전이라도 적어보세요." rows="4">오늘 전력공기업 채용 공고를 확인하고 한전 상반기 필기 복기 스터디를 진행했다. 처음엔 문제 유형이 낯설어 막막했지만, 시간 배분 연습을 거듭하니 문제 풀이 속도가 5분 줄었다. 전력공학 송배전 파트는 오답 정리를 완벽히 끝마쳤다.</textarea>
+</div>
+</div>
+<!-- Section 4: Self Encouragement -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-2 mb-space-sm">
+<span class="bg-on-surface text-surface-container-lowest font-label-sm text-label-sm px-2 py-0.5 rounded">자가 발전</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">내일의 나에게 보내는 전력 메시지</span>
+</div>
+<div class="bg-surface-container-low rounded-lg p-space-sm">
+<div class="flex items-start gap-2">
+<span class="text-xl">💌</span>
+<textarea class="w-full bg-transparent text-on-surface font-body-md text-body-md focus:outline-none placeholder:text-secondary/60 leading-relaxed font-medium" id="cheer-input" placeholder="나에게 해주고 싶은 따뜻한 응원의 한 마디를 남겨보세요." rows="2">불안해하지 말고 오늘 쌓은 1kWh가 나중에 큰 빛을 낼 거야! 꾸준함이 결국 합격선을 넘긴다.</textarea>
+</div>
+</div>
+</div>
+<!-- Power Outage Safeguard Notice (Editorial Trust Guard) -->
+<div class="bg-surface-container-high rounded-xl p-space-md flex items-start gap-3 shadow-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-bold flex items-center gap-1.5">
+          스마트 정전 방지 시스템 가동 중
+        </span>
+<p class="font-body-sm text-body-sm text-secondary leading-snug mt-0.5">
+          안심하세요! 일시적인 통신 장애나 브라우저 정전이 발생해도 소중한 취준 일기 데이터는 <span class="font-bold text-on-surface">Firestore 보안 데이터베이스에 안전하게 자동 보존</span>됩니다.
+        </p>
+</div>
+</div>
+<!-- Submission & Action Area -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<button class="w-full h-14 rounded-xl bg-primary-container text-on-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(255,94,30,0.28)] hover:opacity-95 active:scale-[0.98] transition-all" id="submit-btn" type="submit">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+        발전소 충전하고 일기 저장하기 (+1 kWh)
+      </button>
+<div class="flex items-center justify-between px-space-xs text-secondary font-label-sm text-label-sm">
+<div class="flex items-center gap-1.5 text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-ping"></span>
+<span id="auto-save-status">30초 전 자동 임시 저장 완료</span>
+</div>
+<button class="text-secondary hover:text-on-surface underline transition-colors" onclick="triggerManualSave()" type="button">
+          수동 임시저장
+        </button>
+</div>
+</div>
+</form>
+<!-- Interactive Toast Notification (Hidden by default) -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 max-w-[90%] w-[420px] bg-inverse-surface text-inverse-on-surface px-space-md py-3 rounded-xl shadow-xl flex items-center gap-3 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-50" id="toast">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[24px]">electric_meter</span>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-lg text-label-lg font-bold">1 kWh 송전 완료! Lv.25 달성 🎉</span>
+<span class="font-body-sm text-body-sm text-secondary-container truncate">발전소 출력 안정화! 내일도 연속 가동을 이어가세요.</span>
+</div>
+</div>
+</div>
+<script>
+  function selectMood(moodTitle, quote, btnElement) {
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+      btn.classList.remove('active-mood', 'bg-primary-fixed', 'text-on-primary-fixed', 'shadow-sm');
+      btn.classList.add('bg-surface-container-low');
+    });
+
+    btnElement.classList.add('active-mood', 'bg-primary-fixed', 'text-on-primary-fixed', 'shadow-sm');
+    btnElement.classList.remove('bg-surface-container-low');
+
+    const descElem = document.getElementById('selected-mood-desc');
+    const quoteElem = document.getElementById('mood-quote');
+    if (descElem) descElem.textContent = moodTitle;
+    if (quoteElem) quoteElem.textContent = quote;
+  }
+
+  function appendTag(tagName) {
+    const focusInput = document.getElementById('study-focus');
+    if (focusInput) {
+      if (focusInput.value.includes(tagName)) return;
+      focusInput.value = focusInput.value ? focusInput.value + ', ' + tagName : tagName;
+    }
+  }
+
+  function triggerManualSave() {
+    const status = document.getElementById('auto-save-status');
+    if (status) {
+      status.textContent = '방금 수동 임시 저장됨 (Firestore 동기화)';
+      setTimeout(() => {
+        status.textContent = '방금 전 자동 임시 저장 완료';
+      }, 3000);
+    }
+  }
+
+  function handleDiarySubmit() {
+    const toast = document.getElementById('toast');
+    const progressBar = document.getElementById('power-progress-bar');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (progressBar) {
+      progressBar.style.width = '100%';
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[22px]">sync</span> 전력망 동기화 중...';
+    }
+
+    setTimeout(() => {
+      if (submitBtn) {
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-[24px]">task_alt</span> 가동 보고 완료됨';
+        submitBtn.classList.remove('bg-primary-container');
+        submitBtn.classList.add('bg-secondary', 'cursor-default');
+      }
+
+      if (toast) {
+        toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+        toast.classList.add('opacity-100', 'translate-y-0');
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+          toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 4000);
+      }
+    }, 800);
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_-4px_16px_rgba(11,28,48,0.05)]" data-active-classes="text-primary-container font-bold"><div class="flex justify-around items-center h-16 max-w-[680px] mx-auto px-space-xs"><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-secondary hover:text-on-surface transition-all" data-path="home-dashboard" href="#"><span class="material-symbols-outlined text-[22px]">energy_savings_leaf</span><span class="font-label-sm text-label-sm mt-0.5">홈</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-secondary hover:text-on-surface transition-all" data-path="news-briefs" href="#"><span class="material-symbols-outlined text-[22px]">newspaper</span><span class="font-label-sm text-label-sm mt-0.5">뉴스</span></a><a aria-current="page" class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 transition-all text-primary-container font-bold" data-path="write-diary" href="#"><div class="w-10 h-10 -mt-4 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-[0_6px_16px_rgba(255,94,30,0.35)]"><span class="material-symbols-outlined text-[22px]">edit_note</span></div><span class="font-label-sm text-label-sm mt-0.5">일기쓰기</span></a><a class="flex flex-col items-center justify-center min-w-[56px] min-h-[44px] py-1 text-secondary hover:text-on-surface transition-all" data-path="record-calendar" href="#"><span class="material-symbols-outlined text-[22px]">calendar_month</span><span class="font-label-sm text-label-sm mt-0.5">기록달력</span></a></div></nav></body></html>

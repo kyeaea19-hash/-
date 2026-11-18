@@ -1,0 +1,204 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidDateId(dateStr) {
+      return dateStr is string && dateStr.size() == 10 && dateStr.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function hasRequiredUserKeys(data) {
+      let allKeys = [
+        'uid', 'displayName', 'email', 'targetCompany', 'dailyGoalMinutes',
+        'level', 'storedKwh', 'streak', 'longestStreak', 'blackoutCount',
+        'totalDiaries', 'signupDate', 'lastWrittenDate', 'lastPenaltyCheckDate',
+        'completedQuizIds', 'reminderEnabled', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(allKeys) && data.keys().hasOnly(allKeys);
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.uid is string
+        && data.uid == userId
+        && isValidId(data.uid)
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 80
+        && data.email is string
+        && data.email.size() <= 160
+        && data.targetCompany is string
+        && data.targetCompany.size() >= 1
+        && data.targetCompany.size() <= 60
+        && data.dailyGoalMinutes is number
+        && data.dailyGoalMinutes >= 30
+        && data.dailyGoalMinutes <= 960
+        && data.level is number
+        && data.level >= 0
+        && data.level <= 365
+        && data.storedKwh is number
+        && data.storedKwh >= 0
+        && data.storedKwh <= 365
+        && data.streak is number
+        && data.streak >= 0
+        && data.streak <= 3650
+        && data.longestStreak is number
+        && data.longestStreak >= 0
+        && data.longestStreak <= 3650
+        && data.blackoutCount is number
+        && data.blackoutCount >= 0
+        && data.blackoutCount <= 3650
+        && data.totalDiaries is number
+        && data.totalDiaries >= 0
+        && data.totalDiaries <= 10000
+        && isValidDateId(data.signupDate)
+        && data.lastWrittenDate is string
+        && data.lastWrittenDate.size() <= 10
+        && (data.lastWrittenDate == '' || isValidDateId(data.lastWrittenDate))
+        && isValidDateId(data.lastPenaltyCheckDate)
+        && data.completedQuizIds is list
+        && data.completedQuizIds.size() <= 100
+        && (data.completedQuizIds.size() == 0 || (data.completedQuizIds[0] is string && data.completedQuizIds[0].size() <= 60))
+        && data.reminderEnabled is bool
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function hasRequiredDiaryKeys(data) {
+      let allKeys = [
+        'userId', 'date', 'studyMinutes', 'studyTimeText', 'focusModule',
+        'tags', 'mood', 'moodQuote', 'retrospective', 'cheerNote',
+        'kwhEarned', 'targetCompany', 'createdAt', 'updatedAt'
+      ];
+      return data.keys().hasAll(allKeys) && data.keys().hasOnly(allKeys);
+    }
+
+    function isValidDiaryEntry(data, userId, diaryId) {
+      return data.userId is string
+        && data.userId == userId
+        && isValidId(data.userId)
+        && data.date is string
+        && data.date == diaryId
+        && isValidDateId(data.date)
+        && data.studyMinutes is number
+        && data.studyMinutes >= 0
+        && data.studyMinutes <= 1440
+        && data.studyTimeText is string
+        && data.studyTimeText.size() >= 1
+        && data.studyTimeText.size() <= 40
+        && data.focusModule is string
+        && data.focusModule.size() >= 1
+        && data.focusModule.size() <= 120
+        && data.tags is list
+        && data.tags.size() <= 10
+        && (data.tags.size() == 0 || (data.tags[0] is string && data.tags[0].size() <= 40))
+        && data.mood is string
+        && data.mood.size() >= 1
+        && data.mood.size() <= 30
+        && data.mood in ['활력 충전', '아이디어 번뜩', '평온함', '방전 직전', '휴식 필요']
+        && data.moodQuote is string
+        && data.moodQuote.size() >= 1
+        && data.moodQuote.size() <= 200
+        && data.retrospective is string
+        && data.retrospective.size() >= 1
+        && data.retrospective.size() <= 3000
+        && data.cheerNote is string
+        && data.cheerNote.size() >= 1
+        && data.cheerNote.size() <= 500
+        && data.kwhEarned is number
+        && data.kwhEarned >= 0
+        && data.kwhEarned <= 1
+        && data.targetCompany is string
+        && data.targetCompany.size() >= 1
+        && data.targetCompany.size() <= 60
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isValidId(userId)
+        && isOwner(userId)
+        && hasRequiredUserKeys(incoming())
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().signupDate == existing().signupDate
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['targetCompany', 'dailyGoalMinutes', 'displayName', 'reminderEnabled', 'updatedAt'])
+          || incoming().diff(existing()).affectedKeys().hasOnly(['level', 'storedKwh', 'streak', 'longestStreak', 'blackoutCount', 'totalDiaries', 'lastWrittenDate', 'lastPenaltyCheckDate', 'completedQuizIds', 'updatedAt'])
+        );
+      allow delete: if false;
+
+      match /diaries/{diaryId} {
+        allow get: if isValidId(userId)
+          && isValidDateId(diaryId)
+          && isOwner(userId)
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+        allow list: if isVerifiedUser()
+          && request.auth.uid == userId
+          && resource.data.userId == request.auth.uid;
+        allow create: if isValidId(userId)
+          && isValidDateId(diaryId)
+          && isOwner(userId)
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid
+          && hasRequiredDiaryKeys(incoming())
+          && isValidDiaryEntry(incoming(), userId, diaryId)
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time;
+        allow update: if isValidId(userId)
+          && isValidDateId(diaryId)
+          && isOwner(userId)
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid
+          && isValidDiaryEntry(incoming(), userId, diaryId)
+          && incoming().userId == existing().userId
+          && incoming().date == existing().date
+          && incoming().kwhEarned == existing().kwhEarned
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'studyMinutes', 'studyTimeText', 'focusModule', 'tags',
+            'mood', 'moodQuote', 'retrospective', 'cheerNote',
+            'targetCompany', 'updatedAt'
+          ]);
+        allow delete: if isValidId(userId)
+          && isValidDateId(diaryId)
+          && isOwner(userId)
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+      }
+    }
+  }
+}

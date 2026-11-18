@@ -1,0 +1,236 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Power plant state, streak metrics, and target utility preferences for a job seeker.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Authentication user UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "User display name.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "User email address (PII, owner-only access).",
+          "maxLength": 160
+        },
+        "targetCompany": {
+          "type": "string",
+          "description": "Target Korean power public corporation.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "dailyGoalMinutes": {
+          "type": "number",
+          "description": "Daily study goal in minutes (30 to 960)."
+        },
+        "level": {
+          "type": "number",
+          "description": "Current power plant level (0 to 365)."
+        },
+        "storedKwh": {
+          "type": "number",
+          "description": "Stored energy in kWh protecting against blackouts (0 to 365)."
+        },
+        "streak": {
+          "type": "number",
+          "description": "Current consecutive diary days."
+        },
+        "longestStreak": {
+          "type": "number",
+          "description": "Highest consecutive diary days achieved."
+        },
+        "blackoutCount": {
+          "type": "number",
+          "description": "Total number of blackout events occurred."
+        },
+        "totalDiaries": {
+          "type": "number",
+          "description": "Total number of diary entries written."
+        },
+        "signupDate": {
+          "type": "string",
+          "description": "Account creation date in YYYY-MM-DD format.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "lastWrittenDate": {
+          "type": "string",
+          "description": "Last diary date written in YYYY-MM-DD format or empty.",
+          "maxLength": 10
+        },
+        "lastPenaltyCheckDate": {
+          "type": "string",
+          "description": "Last date blackout penalty check was evaluated in YYYY-MM-DD.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "completedQuizIds": {
+          "type": "array",
+          "description": "List of completed daily briefing quiz IDs (bounded to 100)."
+        },
+        "reminderEnabled": {
+          "type": "boolean",
+          "description": "Whether daily power generation reminder is enabled."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when profile was last updated."
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "email",
+        "targetCompany",
+        "dailyGoalMinutes",
+        "level",
+        "storedKwh",
+        "streak",
+        "longestStreak",
+        "blackoutCount",
+        "totalDiaries",
+        "signupDate",
+        "lastWrittenDate",
+        "lastPenaltyCheckDate",
+        "completedQuizIds",
+        "reminderEnabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DiaryEntry": {
+      "title": "DiaryEntry",
+      "description": "Daily job-preparation study log, mental battery check, and reflection entry.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "date": {
+          "type": "string",
+          "description": "Entry date in YYYY-MM-DD format.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "studyMinutes": {
+          "type": "number",
+          "description": "Total minutes studied on this date (0 to 1440)."
+        },
+        "studyTimeText": {
+          "type": "string",
+          "description": "Formatted study time string e.g. 6시간 30분.",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "focusModule": {
+          "type": "string",
+          "description": "Main study subject or module.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "tags": {
+          "type": "array",
+          "description": "Quick study tags (max 10 tags)."
+        },
+        "mood": {
+          "type": "string",
+          "description": "Selected battery mood label.",
+          "enum": ["활력 충전", "아이디어 번뜩", "평온함", "방전 직전", "휴식 필요"],
+          "maxLength": 30
+        },
+        "moodQuote": {
+          "type": "string",
+          "description": "Editorial advice associated with selected mood.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "retrospective": {
+          "type": "string",
+          "description": "Daily retrospective reflection text.",
+          "minLength": 1,
+          "maxLength": 3000
+        },
+        "cheerNote": {
+          "type": "string",
+          "description": "Encouragement note to future self.",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "kwhEarned": {
+          "type": "number",
+          "description": "kWh generated by this entry (0 or 1)."
+        },
+        "targetCompany": {
+          "type": "string",
+          "description": "Target company tag for the day.",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when diary was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when diary was updated."
+        }
+      },
+      "required": [
+        "userId",
+        "date",
+        "studyMinutes",
+        "studyTimeText",
+        "focusModule",
+        "tags",
+        "mood",
+        "moodQuote",
+        "retrospective",
+        "cheerNote",
+        "kwhEarned",
+        "targetCompany",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Owner-only user profile and power plant progression state."
+    },
+    "/users/{userId}/diaries/{diaryId}": {
+      "schema": {
+        "$ref": "#/entities/DiaryEntry"
+      },
+      "description": "Owner-only daily study and mental care diary entries keyed by YYYY-MM-DD."
+    }
+  }
+}

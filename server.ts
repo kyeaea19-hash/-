@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -229,29 +229,25 @@ function inferArticleMeta(item: RssItem): {
   company: string;
   category: string;
   visualTheme: 'nuclear' | 'grid' | 'smr' | 'hydrogen' | 'offshore' | 'solar';
-  interviewTip: string;
-  ncsNote: string;
 } {
   const t = item.title;
+  if (/한전KDN/.test(t)) {
+    return { company: '한전KDN', category: '전력ICT·에너지', visualTheme: 'grid' };
+  }
+  if (/한전KPS/.test(t)) {
+    return { company: '한전KPS', category: '발전정비·안전', visualTheme: 'grid' };
+  }
+  if (/한국전력기술|한전기술/.test(t)) {
+    return { company: '한국전력기술', category: '전력엔지니어링', visualTheme: 'nuclear' };
+  }
+  if (/한전원자력연료/.test(t)) {
+    return { company: '한전원자력연료', category: '원전·연료', visualTheme: 'nuclear' };
+  }
   if (/한국가스공사|가스공사/.test(t)) {
-    return {
-      company: '한국가스공사',
-      category: '전기직 공기업',
-      visualTheme: 'hydrogen',
-      interviewTip:
-        'LNG 천연가스 수급·배관망 및 인수기지 전기설비(변전·방폭설비) 안전관리, 수소·탄소중립 인프라 전환 전략을 함께 점검해 두세요.',
-      ncsNote: '면접·전공 핵심: 방폭 전기설비 · LNG/수소 인프라 · 계통 안전',
-    };
+    return { company: '한국가스공사', category: '전기직 공기업', visualTheme: 'hydrogen' };
   }
   if (/한국도로공사|도로공사/.test(t)) {
-    return {
-      company: '한국도로공사',
-      category: '전기직 공기업',
-      visualTheme: 'solar',
-      interviewTip:
-        '고속도로 휴게소 초급속 전기차(EV) 충전 인프라, 터널·스마트톨링 전력 및 조명 설비, 도로 유휴부지 태양광 확대 과제를 정리해 두세요.',
-      ncsNote: '면접·전공 핵심: EV 초급속 충전망 · 터널 수배전 설비 · 도로 태양광',
-    };
+    return { company: '한국도로공사', category: '전기직 공기업', visualTheme: 'solar' };
   }
   if (/코레일|한국철도공사|국가철도공단|서울교통공사/.test(t)) {
     return {
@@ -262,30 +258,13 @@ function inferArticleMeta(item: RssItem): {
         : '코레일',
       category: '전기직 공기업',
       visualTheme: 'grid',
-      interviewTip:
-        '전철변전소·전차선 급전시스템(단권변압기 AT방식 등) 안정화, 철도 전력설비 AI 예지보전 및 중대재해 예방 대책을 꼭 연결해 보세요.',
-      ncsNote: '면접·전공 핵심: 전기철도 급전계통 · 철도변전소 · 설비 안전',
     };
   }
   if (/수자원공사|K-water/.test(t)) {
-    return {
-      company: '한국수자원공사',
-      category: '전기직 공기업',
-      visualTheme: 'offshore',
-      interviewTip:
-        '다목적댐 수력·조력 발전과 수상태양광·수열에너지·그린수소 등 물-에너지 융합 사업에서의 전기설비 유지관리 역할을 정리하세요.',
-      ncsNote: '면접·전공 핵심: 수력·조력 발전 · 수상태양광 · 수열에너지',
-    };
+    return { company: '한국수자원공사', category: '전기직 공기업', visualTheme: 'offshore' };
   }
   if (/지역난방공사/.test(t)) {
-    return {
-      company: '한국지역난방공사',
-      category: '전기직 공기업',
-      visualTheme: 'solar',
-      interviewTip:
-        '열병합발전(CHP) 기반 집단에너지 효율화와 분산에너지 특구 내 열·전력 연계 운영 방안을 면접 답변에 녹여보세요.',
-      ncsNote: '면접·전공 핵심: 열병합발전(CHP) · 분산전원 · 에너지 효율',
-    };
+    return { company: '한국지역난방공사', category: '전기직 공기업', visualTheme: 'solar' };
   }
   if (/전기안전공사|에너지공단|인천국제공항공사|한국공항공사/.test(t)) {
     return {
@@ -296,90 +275,210 @@ function inferArticleMeta(item: RssItem): {
         : '공항공사',
       category: '전기직 공기업',
       visualTheme: 'grid',
-      interviewTip:
-        '신재생·ESS·전기설비 안전진단 및 법정검사, 공항·국가 기반시설 무정전 전력계통(UPS·비상발전) 운영 역량을 강조해 보세요.',
-      ncsNote: '면접·전공 핵심: 전기설비 안전관리 · ESS 검사 · 무정전 계통',
     };
   }
-  if (/원전|SMR|두코바니|테믈린|한수원|원자력/.test(t)) {
+  if (/한수원|한국수력원자력/.test(t)) {
     return {
-      company: t.includes('한수원') ? '한국수력원자력' : '원전·SMR',
+      company: '한국수력원자력',
       category: '원전·에너지',
       visualTheme: t.includes('SMR') ? 'smr' : 'nuclear',
-      interviewTip:
-        '무탄소 기저전원으로서 원전·SMR의 역할과 수출 경쟁력(APR1000/APR1400), 수용성·안전성 강화 방안을 함께 정리해 두세요.',
-      ncsNote: '면접·전공 핵심: 제11차 전기본 · SMR · 원전 생태계',
     };
   }
-  if (/송전|변전|HVDC|전력망|에너지고속도로|계통/.test(t)) {
+  if (/전력거래소/.test(t)) {
+    return { company: '전력거래소', category: '전력시장·계통', visualTheme: 'grid' };
+  }
+  if (/원전|SMR|두코바니|테믈린|원자력/.test(t)) {
     return {
-      company: t.includes('한전') ? '한국전력' : '전력망·계통',
+      company: '원전·SMR',
+      category: '원전·에너지',
+      visualTheme: t.includes('SMR') ? 'smr' : 'nuclear',
+    };
+  }
+  if (/송전|변전|HVDC|전력망|에너지고속도로|계통|해저케이블/.test(t)) {
+    return {
+      company: /(?:^|[^가-힣])한전|한국전력/.test(t) ? '한국전력' : '전력망·계통',
       category: '송배전·인프라',
       visualTheme: 'grid',
-      interviewTip:
-        '재생에너지·원전 전력을 수도권 및 AI 데이터센터로 보내기 위한 전력망 적기 확충과 주민 수용성·보상 현실화 과제를 연결해 답변해 보세요.',
-      ncsNote: '면접·전공 핵심: 국가기간 전력망 특별법 · HVDC · 계통 안정화',
     };
   }
-  if (/요금|한전|실적|부채|SMP|전력시장|데이터센터|분산/.test(t)) {
+  if (/요금|실적|부채|SMP|전력시장|데이터센터|분산|(?:^|[^가-힣])한전|한국전력/.test(t)) {
     return {
-      company: t.includes('한전') ? '한국전력' : '전력시장·요금',
+      company: /(?:^|[^가-힣])한전|한국전력/.test(t) ? '한국전력' : '전력시장·요금',
       category: '시장·재무',
       visualTheme: 'solar',
-      interviewTip:
-        '한전 재무구조와 SMP·연료비 연동제, 지역별 차등 요금제 및 분산에너지 특구가 산업 경쟁력에 미치는 영향을 꼭 짚어보세요.',
-      ncsNote: '면접·전공 핵심: SMP · CBP 정산 · 지역별 요금제',
     };
   }
-  if (/풍력|태양광|수소|석탄|발전5사|남동|중부|서부|남부|동서|ESS|양수/.test(t)) {
+  if (/풍력|태양광|수소|석탄|발전5사|남동발전|중부발전|서부발전|남부발전|동서발전|ESS|양수/.test(t)) {
+    const corp =
+      t.match(/(한국남동발전|남동발전|한국중부발전|중부발전|한국서부발전|서부발전|한국남부발전|남부발전|한국동서발전|동서발전)/)?.[1] ||
+      '발전5사·재생e';
     return {
-      company: '발전5사·재생e',
+      company: corp.startsWith('한국') || corp === '발전5사·재생e' ? corp : `한국${corp}`,
       category: '에너지전환',
       visualTheme: /풍력/.test(t) ? 'offshore' : 'hydrogen',
-      interviewTip:
-        '석탄화력 폐지에 따른 정의로운 전환, 수소·암모니아 혼소, ESS·양수발전을 통한 유연성 자원 확보 전략을 정리해 두세요.',
-      ncsNote: '면접·전공 핵심: 정의로운 전환 · 유연성 자원 · ESS',
     };
   }
   if (/공공기관|채용|지방이전|경영평가|산재|중대재해|안전|4\.5일/.test(t)) {
-    return {
-      company: '공기업·정책',
-      category: '공공기관·안전',
-      visualTheme: 'grid',
-      interviewTip:
-        '공공기관 경영평가(AI 혁신·안전 지표), 중대재해 예방 및 위험성 평가, 지방이전·기능 개혁 등 최근 공공기관 거버넌스 흐름을 확인하세요.',
-      ncsNote: '면접·인성 핵심: 공공기관 경영평가 · 안전보건 · 공공성',
-    };
+    return { company: '공기업·정책', category: '공공기관·안전', visualTheme: 'grid' };
   }
-  return {
-    company: '에너지·거시',
-    category: '산업·탄소',
-    visualTheme: 'solar',
-    interviewTip:
-      '국제 유가·LNG 가격·환율 변동 및 2035 NDC·배출권거래제 변화가 국내 발전단가와 전력공기업 경영에 미치는 영향을 연결해 보세요.',
-    ncsNote: '면접·시사 핵심: 에너지 안보 · 2035 NDC · 배출권거래제',
-  };
+  return { company: '에너지·거시', category: '산업·탄소', visualTheme: 'solar' };
+}
+
+const ARTICLE_KEYWORD_CANDIDATES = [
+  '가상발전소',
+  'ESS',
+  '분산에너지',
+  '재생에너지',
+  '신재생에너지',
+  '수상태양광',
+  '태양광',
+  '해상풍력',
+  '풍력',
+  '해저케이블',
+  'HVDC',
+  '에너지고속도로',
+  '송전선로',
+  '송전망',
+  '배전망',
+  '변전소',
+  '스마트그리드',
+  '전력망',
+  '전력설비',
+  '무선통신',
+  '전력시장',
+  '전기요금',
+  'SMP',
+  'CBP',
+  '양수발전',
+  '석탄발전',
+  'LNG',
+  '원전',
+  '원자력',
+  '표준운영체계',
+  'i-SMR',
+  'SMR',
+  '청정수소',
+  '수소',
+  '배출권',
+  '온실가스',
+  '2035 NDC',
+  '탄소중립',
+  '데이터센터',
+  'AI',
+  'ICT',
+  '예지보전',
+  '디지털',
+  '전기차',
+  '충전',
+  '전철',
+  '철도',
+  '고속도로',
+  '열병합',
+  '수열',
+  '수력',
+  '중대재해',
+  '안전',
+  '신입',
+  '채용',
+  '영업이익',
+  '실적',
+  '부채',
+  '경영평가',
+  'ESG',
+  '지방이전',
+  '지산지소',
+  '업무협약',
+  '협약',
+  '수주',
+  '수출',
+  '착공',
+  '준공',
+  '실증',
+  '거버넌스',
+] as const;
+
+function stripReporterPrefix(text: string): string {
+  return text
+    .replace(/\[[^\]]*(?:제공|캡처|사진|자료|연합뉴스|뉴시스|뉴스1|Pick|단독|종합)[^\]]*\]/gi, ' ')
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, ' ')
+    .replace(/\([가-힣]{1,8}\s*=\s*[^)]+\)\s*(?:[가-힣]{2,5}\s*기자\s*=?\s*)?/g, ' ')
+    .replace(/^[가-힣A-Za-z0-9·.\s]{2,24}\s*=\s*[가-힣]{2,5}\s*기자\s*[|｜=]?\s*/g, '')
+    .replace(/[가-힣]{2,4}\s*기자\s*=/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function splitFactualSentences(rawText: string): string[] {
   if (!rawText) return [];
-  const cleaned = rawText
-    .replace(/\[[^\]]*(?:제공|캡처|사진|자료|연합뉴스|뉴시스|뉴스1)[^\]]*\]/g, ' ')
-    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, ' ')
-    .replace(/\([^)]*=\s*[^)]+\)\s*[가-힣]{2,4}\s*기자\s*=/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const cleaned = stripReporterPrefix(rawText);
 
   const matches = cleaned.match(/[^.!?]+(?:[.!?]+|$)/g) || [];
   const out: string[] = [];
   for (const m of matches) {
-    const s = m.trim();
+    const s = stripReporterPrefix(m);
     if (s.length >= 18 && s.length <= 240 && /[가-힣]/.test(s)) {
       out.push(s);
     }
     if (out.length >= 5) break;
   }
   return out;
+}
+
+function matchesArticleKeyword(text: string, kw: string): boolean {
+  if (/^[A-Za-z0-9-]+$/.test(kw)) {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(?<![A-Za-z0-9])${escaped}(?![A-Za-z0-9])`, 'i');
+    return regex.test(text);
+  }
+  return text.toLowerCase().includes(kw.toLowerCase());
+}
+
+function buildArticleGroundedPoint(
+  item: RssItem,
+  company: string,
+  category: string,
+  sentences: string[]
+): { interviewTip: string; ncsNote: string } {
+  const cleanTitle = stripReporterPrefix(item.title)
+    .replace(/^(?:\[[^\]]+\]\s*)+/, '')
+    .trim();
+  const bodyScope = `${cleanTitle} ${sentences.join(' ')} ${item.snippet || ''}`;
+
+  // Only select keywords that literally appear in this article (prioritizing title keywords)
+  const titleMatched = ARTICLE_KEYWORD_CANDIDATES.filter((kw) =>
+    matchesArticleKeyword(cleanTitle, kw)
+  );
+  const bodyMatched = ARTICLE_KEYWORD_CANDIDATES.filter(
+    (kw) => !titleMatched.includes(kw) && matchesArticleKeyword(bodyScope, kw)
+  );
+
+  // Deduplicate substring overlaps (e.g. if '수상태양광' is present, skip '태양광'; if '업무협약', skip '협약')
+  const dedupedKeywords: string[] = [];
+  for (const kw of [...titleMatched, ...bodyMatched]) {
+    const overlaps = dedupedKeywords.some(
+      (prev) => prev.includes(kw) || kw.includes(prev)
+    );
+    if (!overlaps) {
+      dedupedKeywords.push(kw);
+    }
+    if (dedupedKeywords.length >= 3) break;
+  }
+
+  const ncsNote =
+    dedupedKeywords.length > 0
+      ? `기사 핵심 키워드: ${dedupedKeywords.join(' · ')}`
+      : `기사 핵심 분야: ${company} · ${category}`;
+
+  // Prefer the lead sentence when concise, otherwise use the clean article headline
+  const leadSentence =
+    sentences[0] && sentences[0].length >= 20 && sentences[0].length <= 130
+      ? sentences[0].replace(/[.!?]+$/, '')
+      : cleanTitle;
+
+  const kwText = dedupedKeywords.length > 0 ? dedupedKeywords.join('·') : category;
+  const interviewTip = `「${leadSentence}」 기사 내용을 바탕으로, 기사 속 '${kwText}' 사안이 ${company} 및 희망 직무에서 어떤 의미가 있는지 자기소개서 지원동기나 면접 답변 사례로 연결해 보세요.`;
+
+  return { interviewTip, ncsNote };
 }
 
 async function fetchSingleArticleBody(item: RssItem): Promise<RssItem> {
@@ -480,6 +579,7 @@ function buildFallbackBriefings(items: RssItem[], isoDate: string) {
         : sentences.length === 1
         ? [item.title, sentences[0]]
         : [item.title, '상세 내용은 아래 원문 보기에서 직접 확인할 수 있습니다.'];
+    const grounded = buildArticleGroundedPoint(item, meta.company, meta.category, sentences);
 
     return {
       id: `rss-${isoDate}-${idx}`,
@@ -492,8 +592,8 @@ function buildFallbackBriefings(items: RssItem[], isoDate: string) {
       readTimeLabel: '1분 브리핑',
       intro,
       bullets,
-      interviewTip: meta.interviewTip,
-      ncsNote: meta.ncsNote,
+      interviewTip: grounded.interviewTip,
+      ncsNote: grounded.ncsNote,
       sourceName: item.sourceName,
       sourceUrl: item.link,
       visualTheme: meta.visualTheme,
@@ -522,7 +622,7 @@ function buildFallbackBriefings(items: RssItem[], isoDate: string) {
   const interviewTips = articles.slice(0, 3).map((a, idx) => ({
     id: `tip-${isoDate}-${idx}`,
     company: a.company,
-    question: `Q. "${a.title.slice(0, 42)}${a.title.length > 42 ? '...' : ''}" 이슈가 전력 공기업에 주는 시사점은?`,
+    question: `Q. "${a.title.slice(0, 42)}${a.title.length > 42 ? '...' : ''}" 기사를 면접·자소서에 어떻게 연결할 수 있을까요?`,
     answer: a.interviewTip,
   }));
 
@@ -556,45 +656,14 @@ async function enrichWithGeminiIfAvailable(items: RssItem[], isoDate: string) {
 
   const prompt = `다음은 오늘(${isoDate}) 실제 보도된 한국 전력·에너지 및 전기직 주요 공기업 뉴스 목록과 실제 기사 본문 발췌입니다.
 
-[가장 중요한 절대 원칙 — 사실 충실성]
-1. subtitle, intro, bullets에는 **반드시 아래 제공된 기사 제목과 기사 본문 발췌에 명시적으로 적힌 사실·수치·기관·인물·발언만** 요약하세요.
+[가장 중요한 절대 원칙 — 사실 충실성 및 기사 밀착형 면접·자소서 연결]
+1. subtitle, intro, bullets에는 **반드시 아래 제공된 해당 기사 제목과 기사 본문 발췌에 명시적으로 적힌 사실·수치·기관·인물·발언만** 요약하세요.
 2. **기사에 없는 수치, 날짜, 원인, 향후 전망, 다른 기업 사례, 과장·추측 내용을 절대 지어내어 추가하지 마세요.**
 3. 본문 발췌가 짧거나 부족할 경우, 억지로 3줄을 채우려고 없는 내용을 덧붙이지 말고 확인된 사실만으로 1~2줄만 간결하게 작성하세요.
+4. **interviewTip(면접·자소서 연결 포인트)과 ncsNote는 반드시 해당 기사 제목·본문 발췌에 실제로 등장한 핵심 사건·기관·사업·키워드만 가지고 작성하세요.** 기사에 전혀 나오지 않은 설비명(예: 방폭설비, 원전 노형), 제도(예: 기사에 없는 SMP, CBP, 지역별 요금제), 타 사업 내용을 외부 지식으로 끼워 넣지 마세요. 지원자가 이 특정 기사의 핵심 내용을 지원동기·직무역량·면접 답변에 어떻게 연결해 말할 수 있는지 구체적으로 1~2문장으로 적어주세요.
 
 기사 목록:
-${headlinesInput}
-
-아래 JSON 형식만 반환하세요:
-{
-  "articles": [
-    {
-      "index": 0,
-      "company": "핵심 기관 또는 분야 태그 (2~8글자, 예: 한국전력, 한국가스공사, 한국도로공사, 코레일, 원전·SMR, 전력시장)",
-      "category": "세부 카테고리 (2~8글자)",
-      "subtitle": "기사 내용에 근거한 한 줄 부제",
-      "intro": "기사에 적힌 사실만 담은 1~2문장 도입 설명",
-      "bullets": ["기사 본문에 근거한 핵심 사실 1", "기사 본문에 근거한 핵심 사실 2"],
-      "interviewTip": "기사 주제 키워드와 연결한 취준 학습 포인트 1문장 (기사 외 사실을 기사 사실인 것처럼 쓰지 말 것)",
-      "ncsNote": "면접·NCS 키워드 한 줄"
-    }
-  ],
-  "quiz": {
-    "id": "quiz-${isoDate}",
-    "question": "Q. 위 제공된 오늘 기사 내용만으로 풀 수 있는 4지선다 퀴즈 1문제",
-    "options": ["① 보기1", "② 보기2", "③ 보기3", "④ 보기4"],
-    "correctIndex": 0,
-    "explanation": "기사에 명시된 내용만 근거로 한 정답 해설 1~2문장",
-    "bonusKwh": 1
-  },
-  "interviewTips": [
-    {
-      "id": "tip-1",
-      "company": "분야명",
-      "question": "Q. 위 기사 주제 기반 면접 대비 질문",
-      "answer": "면접 답변 방향 2문장"
-    }
-  ]
-}`;
+${headlinesInput}`;
 
   try {
     const response = await Promise.race([
@@ -603,10 +672,68 @@ ${headlinesInput}
         contents: prompt,
         config: {
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              articles: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    index: { type: Type.INTEGER },
+                    company: { type: Type.STRING },
+                    category: { type: Type.STRING },
+                    subtitle: { type: Type.STRING },
+                    intro: { type: Type.STRING },
+                    bullets: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    interviewTip: { type: Type.STRING },
+                    ncsNote: { type: Type.STRING },
+                  },
+                  required: [
+                    'index',
+                    'company',
+                    'category',
+                    'subtitle',
+                    'intro',
+                    'bullets',
+                    'interviewTip',
+                    'ncsNote',
+                  ],
+                },
+              },
+              quiz: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  question: { type: Type.STRING },
+                  options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  correctIndex: { type: Type.INTEGER },
+                  explanation: { type: Type.STRING },
+                  bonusKwh: { type: Type.INTEGER },
+                },
+                required: ['id', 'question', 'options', 'correctIndex', 'explanation', 'bonusKwh'],
+              },
+              interviewTips: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    id: { type: Type.STRING },
+                    company: { type: Type.STRING },
+                    question: { type: Type.STRING },
+                    answer: { type: Type.STRING },
+                  },
+                  required: ['id', 'company', 'question', 'answer'],
+                },
+              },
+            },
+            required: ['articles', 'quiz', 'interviewTips'],
+          },
         },
       }),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Gemini enrichment timeout')), 8000)
+        setTimeout(() => reject(new Error('Gemini enrichment timeout')), 15000)
       ),
     ]);
     const parsed = extractJsonObject(response.text || '');
@@ -639,7 +766,8 @@ ${headlinesInput}
           ? parsed.interviewTips
           : base.interviewTips,
     };
-  } catch {
+  } catch (err) {
+    console.warn('Gemini enrichment skipped/fallback:', err instanceof Error ? err.message : err);
     return null;
   }
 }
